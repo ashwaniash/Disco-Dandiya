@@ -153,6 +153,7 @@
     <div class="panel active" id="panelScan">
       <div id="qr-reader"></div>
       <p class="scan-hint">Camera ko QR ke saamne le jaayein — auto-detect ho jaayega.</p>
+      <button id="retryCameraBtn" type="button" style="margin-bottom:14px;">Retry camera</button>
 
       <div class="manual">
         <input id="manualId" type="text" placeholder="Ya ticket ID paste karein">
@@ -328,6 +329,7 @@
     document.getElementById('panelSettings').classList.toggle('active', tab === 'settings');
     if(tab === 'bookings') loadBookings();
     if(tab === 'settings') loadSettingsPreview();
+    if(tab === 'scan') initScanner();
   }
 
   // ---- Scanner ----
@@ -335,18 +337,28 @@
   let lastScan = { text: '', at: 0 };
   let scanBusy = false;
 
+  let scannerStarting = false;
   function initScanner(){
-    if(scanner) return;
-    scanner = new Html5Qrcode("qr-reader");
+    if(scanner || scannerStarting) return;
+    scannerStarting = true;
+    const instance = new Html5Qrcode("qr-reader");
     Html5Qrcode.getCameras().then(cams => {
       const camId = (cams.find(c => /back|rear|environment/i.test(c.label)) || cams[cams.length - 1] || cams[0])?.id;
-      scanner.start(
+      return instance.start(
         camId ? camId : { facingMode: "environment" },
         { fps: 12, qrbox: { width: 230, height: 230 }, aspectRatio: 1 },
         onScan,
         () => {}
-      ).catch(err => showResult('err', 'Camera error', String(err)));
-    }).catch(err => showResult('err', 'Camera not available', 'Manual ID se check-in karein.'));
+      );
+    }).then(() => {
+      scanner = instance;
+      scannerStarting = false;
+    }).catch(err => {
+      // Reset so the user can retry (e.g. after granting permission) without a full page reload
+      scanner = null;
+      scannerStarting = false;
+      showResult('err', 'Camera not available', 'Permission allow karke "Retry camera" dabayein, ya Manual ID se check-in karein.');
+    });
   }
 
   function onScan(text){
@@ -356,6 +368,12 @@
     lastScan = { text, at: now };
     checkIn(text.trim());
   }
+
+  document.getElementById('retryCameraBtn').addEventListener('click', () => {
+    scanner = null;
+    scannerStarting = false;
+    initScanner();
+  });
 
   document.getElementById('manualBtn').addEventListener('click', () => {
     const v = document.getElementById('manualId').value.trim();
