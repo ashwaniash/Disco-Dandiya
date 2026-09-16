@@ -6,7 +6,7 @@
 <title>Disco Dandiya 7.0 — Book Your Pass</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.4.4/qrcode.min.js"></script>
@@ -47,14 +47,14 @@
   body{
     background: var(--night);
     color: var(--cream);
-    font-family:'Work Sans', sans-serif;
+    font-family:'Inter', sans-serif;
     font-size:16px;
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
     padding-bottom: 120px; /* room for floating pay bar */
   }
   h1,h2,.display{
-    font-family:'Fraunces', serif;
+    font-family:'Playfair Display', serif;
     font-weight:600;
     margin:0;
     letter-spacing:-0.01em;
@@ -114,7 +114,7 @@
     border: 1px solid var(--card-line);
     box-shadow: var(--shadow-sm);
     padding: 9px 18px; border-radius: 999px;
-    font-family:'Work Sans', sans-serif; font-size:0.8rem; font-weight:600;
+    font-family:'Inter', sans-serif; font-size:0.8rem; font-weight:600;
     text-decoration:none;
     transition: transform .12s ease, box-shadow .12s ease;
   }
@@ -126,7 +126,7 @@
     border: 1px solid var(--rani);
     box-shadow: 0 6px 16px rgba(156,43,43,0.30);
     padding: 9px 20px; border-radius: 999px;
-    font-family:'Work Sans', sans-serif; font-size:0.8rem; font-weight:700;
+    font-family:'Inter', sans-serif; font-size:0.8rem; font-weight:700;
     text-decoration:none; cursor:pointer;
     transition: transform .12s ease, box-shadow .12s ease;
   }
@@ -135,7 +135,7 @@
 
   /* ---------- Section label ---------- */
   .section-title{
-    font-family:'Fraunces', serif;
+    font-family:'Playfair Display', serif;
     font-size:1.24rem;
     font-weight:600;
     letter-spacing:-0.01em;
@@ -194,7 +194,7 @@
     box-shadow: var(--shadow-sm);
     border-radius: var(--r-md);
     padding:13px 8px;
-    font-family:'Work Sans', sans-serif;
+    font-family:'Inter', sans-serif;
     font-size:0.88rem; font-weight:600;
     cursor:pointer;
     transition: transform .12s ease, box-shadow .14s ease, background .14s ease, color .14s ease;
@@ -226,7 +226,7 @@
     box-shadow: 0 0 0 1.5px var(--gold), var(--shadow-md);
   }
   .pass-main{ flex:1; padding:16px 15px; min-width:0; }
-  .pass-main .name{ font-family:'Fraunces', serif; font-size:1.1rem; font-weight:600; }
+  .pass-main .name{ font-family:'Playfair Display', serif; font-size:1.1rem; font-weight:600; }
   .pass-main .desc{ font-size:0.8rem; color: var(--muted); margin-top:3px; }
   .pass-price{
     width:108px;
@@ -236,7 +236,7 @@
     text-align:center;
     position:relative;
   }
-  .pass-price .amt{ font-family:'Fraunces', serif; font-size:1.25rem; font-weight:600; color:var(--gold); }
+  .pass-price .amt{ font-family:'Playfair Display', serif; font-size:1.25rem; font-weight:600; color:var(--gold); }
   .pass-price .per{ font-size:0.66rem; color: var(--muted-2); margin-top:2px; letter-spacing:0.02em; }
 
   /* ---------- Qty stepper ---------- */
@@ -267,7 +267,7 @@
   .field input{
     width:100%; padding:14px 15px; border-radius: var(--r-sm);
     border:1px solid transparent; background: var(--night-2); color:var(--cream);
-    font-family:'Work Sans', sans-serif; font-size:0.95rem;
+    font-family:'Inter', sans-serif; font-size:0.95rem;
     box-shadow: inset 0 0 0 1px var(--card-line);
     transition: box-shadow .14s ease;
   }
@@ -295,11 +295,11 @@
     letter-spacing:0.05em; text-transform:uppercase; font-weight:600;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
-  .paybar .total b{ font-family:'Fraunces', serif; font-size:1.3rem; color:var(--gold); }
+  .paybar .total b{ font-family:'Playfair Display', serif; font-size:1.3rem; color:var(--gold); }
   .paybar button{
     background: var(--rani); color:#fff; border:none;
     padding:15px 26px; border-radius: 999px;
-    font-family:'Work Sans', sans-serif; font-weight:600; font-size:0.93rem;
+    font-family:'Inter', sans-serif; font-weight:600; font-size:0.93rem;
     cursor:pointer; white-space:nowrap;
     box-shadow: 0 6px 18px rgba(156,43,43,0.28);
     transition: transform .12s ease, box-shadow .14s ease;
@@ -349,12 +349,12 @@
     border-radius: var(--r-md);
     padding:14px 16px; margin-bottom:18px; font-size:0.85rem;
   }
-  .sheet-order b{ font-family:'Fraunces', serif; color:var(--gold); font-size:1.1rem; }
+  .sheet-order b{ font-family:'Playfair Display', serif; color:var(--gold); font-size:1.1rem; }
   .rzp-btn{
     width:100%; margin-top:8px;
     background: var(--rani); color:#fff; border:none;
     padding:16px; border-radius: 999px;
-    font-family:'Work Sans', sans-serif; font-weight:600; font-size:0.97rem;
+    font-family:'Inter', sans-serif; font-weight:600; font-size:0.97rem;
     display:flex; align-items:center; justify-content:center; gap:8px;
     cursor:pointer;
     box-shadow: 0 6px 18px rgba(156,43,43,0.28);
@@ -394,10 +394,10 @@
   }
   .ticket-logo-fallback{
     display:flex; align-items:center; justify-content:center;
-    font-family:'Fraunces', serif; font-weight:700; font-size:1rem; color:var(--gold);
+    font-family:'Playfair Display', serif; font-weight:700; font-size:1rem; color:var(--gold);
   }
   .ticket-head-text{ min-width:0; }
-  .ticket-event{ font-family:'Fraunces', serif; font-weight:700; font-size:1.08rem; color:var(--cream); line-height:1.25; }
+  .ticket-event{ font-family:'Playfair Display', serif; font-weight:700; font-size:1.08rem; color:var(--cream); line-height:1.25; }
   .ticket-sub{ font-size:0.78rem; color:var(--rani); font-weight:600; margin-top:2px; }
   .ticket-scallop{ position:relative; height:0; border-top:1.5px dashed var(--card-line); margin:0; }
   .ticket-scallop::before, .ticket-scallop::after{
@@ -427,7 +427,7 @@
   .screenshot-note svg{ width:17px; height:17px; flex-shrink:0; margin-top:1px; color: var(--gold); }
   .done-btn{
     width:100%; background: var(--gold); color: var(--night-2); border:none;
-    padding:15px; border-radius: 999px; font-family:'Work Sans', sans-serif;
+    padding:15px; border-radius: 999px; font-family:'Inter', sans-serif;
     font-weight:600; font-size:0.95rem; cursor:pointer;
     box-shadow: 0 6px 18px rgba(184,134,46,0.30);
     transition: transform .12s ease;
@@ -1222,7 +1222,7 @@
         ctx.fillStyle = gold;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.font = '700 30px "Fraunces", Georgia, serif';
+        ctx.font = '700 30px "Playfair Display", Georgia, serif';
         ctx.fillText('DD', logoX + logoSize / 2, logoY + logoSize / 2 + 2);
         ctx.textBaseline = 'alphabetic';
       }
@@ -1231,14 +1231,14 @@
       const textX = logoX + logoSize + 22;
       ctx.textAlign = 'left';
       ctx.fillStyle = cream;
-      ctx.font = '700 32px "Fraunces", Georgia, serif';
+      ctx.font = '700 32px "Playfair Display", Georgia, serif';
       ctx.fillText('Disco Dandiya 7.0', textX, cardY + 62);
 
-      ctx.font = '600 16px "Work Sans", sans-serif';
+      ctx.font = '600 16px "Inter", sans-serif';
       ctx.fillStyle = rani;
       ctx.fillText('Garba & Dandiya Night', textX, cardY + 86);
 
-      ctx.font = '400 15px "Work Sans", sans-serif';
+      ctx.font = '400 15px "Inter", sans-serif';
       ctx.fillStyle = muted;
       ctx.fillText('16–18 Oct 2026  •  5:00–10:00 PM', textX, cardY + 110);
       ctx.fillText('KL7, Patna', textX, cardY + 130);
@@ -1247,7 +1247,7 @@
       ctx.save();
       ctx.translate(cardX + cardW - 22, cardY + 220);
       ctx.rotate(Math.PI / 2);
-      ctx.font = '600 12px "Work Sans", sans-serif';
+      ctx.font = '600 12px "Inter", sans-serif';
       ctx.fillStyle = muted;
       ctx.textAlign = 'left';
       ctx.fillText('E N T R Y   T I C K E T', 0, 0);
@@ -1271,7 +1271,7 @@
       roundRectPath(ctx, cardX + 24, pillY, cardW - 48, 40, 20);
       ctx.fillStyle = 'rgba(44,18,10,0.045)';
       ctx.fill();
-      ctx.font = '500 13px "Work Sans", sans-serif';
+      ctx.font = '500 13px "Inter", sans-serif';
       ctx.fillStyle = muted;
       ctx.textAlign = 'center';
       ctx.fillText('Valid for one entry  •  Non-transferable', cardX + cardW / 2, pillY + 25);
@@ -1292,22 +1292,22 @@
       let dy = blockY + 6;
       ctx.textAlign = 'left';
 
-      ctx.font = '600 12px "Work Sans", sans-serif';
+      ctx.font = '600 12px "Inter", sans-serif';
       ctx.fillStyle = muted;
       ctx.fillText('EVENT DATE', detX, dy); dy += 30;
 
-      ctx.font = '700 30px "Fraunces", Georgia, serif';
+      ctx.font = '700 30px "Playfair Display", Georgia, serif';
       ctx.fillStyle = cream;
       ctx.fillText(lastBooking.date, detX, dy); dy += 40;
 
-      ctx.font = '700 16px "Work Sans", sans-serif';
+      ctx.font = '700 16px "Inter", sans-serif';
       ctx.fillStyle = rani;
       ctx.fillText(String(lastBooking.pass).toUpperCase(), detX, dy); dy += 40;
 
-      ctx.font = '600 12px "Work Sans", sans-serif';
+      ctx.font = '600 12px "Inter", sans-serif';
       ctx.fillStyle = muted;
       ctx.fillText('BOOKING ID', detX, dy); dy += 24;
-      ctx.font = '700 18px "Work Sans", sans-serif';
+      ctx.font = '700 18px "Inter", sans-serif';
       ctx.fillStyle = cream;
       ctx.fillText(lastBooking.shortId, detX, dy);
 
@@ -1316,11 +1316,11 @@
       roundRectPath(ctx, cardX + 24, guestY, cardW - 48, 44, 12);
       ctx.fillStyle = 'rgba(44,18,10,0.045)';
       ctx.fill();
-      ctx.font = '500 14px "Work Sans", sans-serif';
+      ctx.font = '500 14px "Inter", sans-serif';
       ctx.fillStyle = muted;
       ctx.textAlign = 'left';
       ctx.fillText('Guest', cardX + 40, guestY + 28);
-      ctx.font = '700 15px "Work Sans", sans-serif';
+      ctx.font = '700 15px "Inter", sans-serif';
       ctx.fillStyle = cream;
       ctx.textAlign = 'right';
       ctx.fillText(lastBooking.name, cardX + cardW - 40, guestY + 28);
@@ -1332,11 +1332,11 @@
       ctx.moveTo(cardX + 24, totalY);
       ctx.lineTo(cardX + cardW - 24, totalY);
       ctx.stroke();
-      ctx.font = '600 15px "Work Sans", sans-serif';
+      ctx.font = '600 15px "Inter", sans-serif';
       ctx.fillStyle = muted;
       ctx.textAlign = 'left';
       ctx.fillText('Total Amount', cardX + 24, totalY + 36);
-      ctx.font = '700 22px "Work Sans", sans-serif';
+      ctx.font = '700 22px "Inter", sans-serif';
       ctx.fillStyle = cream;
       ctx.textAlign = 'right';
       ctx.fillText('₹' + lastBooking.amount.toLocaleString('en-IN'), cardX + cardW - 24, totalY + 38);
@@ -1348,7 +1348,7 @@
       ctx.fill();
       ctx.strokeStyle = lineCol;
       ctx.stroke();
-      ctx.font = '600 14px "Work Sans", sans-serif';
+      ctx.font = '600 14px "Inter", sans-serif';
       ctx.fillStyle = gold;
       ctx.textAlign = 'center';
       ctx.fillText('Show this QR code at entry', W / 2, stripY + 34);
