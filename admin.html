@@ -185,6 +185,15 @@
     display:flex; align-items:center; gap:8px; padding:8px 0 2px;
   }
   .feat-preview svg{ width:20px; height:20px; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .feat-preview img{ width:22px; height:22px; object-fit:contain; }
+  .feat-upload{ font-size:0.68rem; color:rgba(44,18,10,0.55); margin-top:4px; }
+  .feat-upload input[type="file"]{ font-size:0.66rem; width:100%; font-family:'Work Sans',sans-serif; }
+  .feat-upload .clearicon{
+    background:none; border:none; padding:0; margin-top:3px;
+    color:var(--rani); font-size:0.68rem; cursor:pointer; text-decoration:underline;
+    font-family:'Work Sans',sans-serif;
+  }
+  .feat-upload .upstatus{ display:block; font-weight:600; }
   .feat-actions{ display:flex; gap:8px; align-items:center; margin-top:10px; }
   .feat-actions button{
     padding:9px 15px; border-radius:7px; font-family:'Work Sans',sans-serif;
@@ -309,7 +318,7 @@
       </div>
       <div class="settings-group">
         <label>Highlights / Features</label>
-        <p class="settings-hint">Website ke "Kya milega" section ke cards. Icon, heading aur chhoti si detail yahin se badal sakte hain. Row ko ↑ ↓ se upar-neeche karein, "Wide" tick karne par card puri chaudai le lega.</p>
+        <p class="settings-hint">Website ke "Event Highlights" section ke cards. Built-in icon list se chunein <b>ya</b> apna icon upload karein (PNG/SVG, square, transparent background, ~128x128px best). Row ko ↑ ↓ se upar-neeche karein; "Full width" tick karne par card puri chaudai le lega.</p>
         <div id="featureList"></div>
         <div class="feat-actions">
           <button type="button" id="featAddBtn">+ Add feature</button>
@@ -782,8 +791,16 @@
 
       row.innerHTML = `
         <div>
-          <select data-k="icon">${iconOpts}</select>
-          <div class="feat-preview" style="color:${ACCENT_HEX[f.accent]||ACCENT_HEX.gold}">${featureIconSvg(f.icon)}</div>
+          <select data-k="icon" ${f.icon_url?'disabled':''}>${iconOpts}</select>
+          <div class="feat-preview" style="color:${ACCENT_HEX[f.accent]||ACCENT_HEX.gold}">${
+            f.icon_url ? `<img src="${f.icon_url}" alt="">` : featureIconSvg(f.icon)
+          }</div>
+          <div class="feat-upload">
+            <span class="upstatus" data-el="upstatus"></span>
+            ${f.icon_url
+              ? '<button type="button" class="clearicon" data-act="clearicon">Custom icon hatayein</button>'
+              : '<input type="file" accept="image/png,image/svg+xml,image/webp" data-act="uploadicon">'}
+          </div>
         </div>
         <select data-k="accent">${accOpts}</select>
         <div class="feat-texts">
@@ -817,8 +834,46 @@
         });
       });
 
+      const upInput = row.querySelector('[data-act="uploadicon"]');
+      if(upInput){
+        upInput.addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          if(file) await uploadFeatureIcon(i, file, row.querySelector('[data-el="upstatus"]'));
+        });
+      }
+      const clearBtn = row.querySelector('[data-act="clearicon"]');
+      if(clearBtn){
+        clearBtn.addEventListener('click', () => {
+          delete featureDraft[i].icon_url;
+          renderFeatureEditor();
+          markFeaturesDirty();
+        });
+      }
+
       wrap.appendChild(row);
     });
+  }
+
+  async function uploadFeatureIcon(index, file, statusEl){
+    if(file.size > 512 * 1024){
+      statusEl.textContent = 'File 500KB se chhoti rakhein';
+      return;
+    }
+    statusEl.textContent = 'Uploading…';
+    const ext = (file.name.split('.').pop() || 'png').toLowerCase();
+    const path = `feature-icons/icon-${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`;
+
+    const { error: upErr } = await sb.storage
+      .from('site-assets')
+      .upload(path, file, { upsert: true, cacheControl: '3600' });
+    if(upErr){
+      statusEl.textContent = 'Upload fail: ' + upErr.message;
+      return;
+    }
+    const { data: pub } = sb.storage.from('site-assets').getPublicUrl(path);
+    featureDraft[index].icon_url = pub.publicUrl + '?v=' + Date.now();
+    renderFeatureEditor();
+    markFeaturesDirty();
   }
 
   function markFeaturesDirty(){
@@ -837,6 +892,7 @@
         title: (f.title || '').trim(),
         sub: (f.sub || '').trim(),
         wide: !!f.wide,
+        ...(f.icon_url ? { icon_url: f.icon_url } : {}),
       }));
     if(!clean.length){
       el.className = 'settings-status err';
@@ -884,7 +940,7 @@
     let feats = data.features;
     if(typeof feats === 'string'){ try { feats = JSON.parse(feats); } catch(e){ feats = null; } }
     featureDraft = (Array.isArray(feats) && feats.length)
-      ? feats.map(f => ({ icon:f.icon||'star', accent:f.accent||'gold', title:f.title||'', sub:f.sub||'', wide:!!f.wide }))
+      ? feats.map(f => ({ icon:f.icon||'star', accent:f.accent||'gold', title:f.title||'', sub:f.sub||'', wide:!!f.wide, ...(f.icon_url ? { icon_url:f.icon_url } : {}) }))
       : DEFAULT_FEATURES.map(f => ({ ...f }));
     renderFeatureEditor();
     document.getElementById('statusFeatures').textContent = '';
