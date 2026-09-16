@@ -43,6 +43,7 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
   html,body{margin:0;padding:0;}
+  html{ scroll-behavior:smooth; }
   body{
     background: var(--night);
     color: var(--cream);
@@ -102,9 +103,13 @@
     color: var(--muted-2); margin-bottom:4px; font-weight:600;
   }
   .hero .meta b{ font-weight:600; font-size:0.8rem; line-height:1.25; display:block; }
+  .hero-actions{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    margin-top:16px; flex-wrap:wrap;
+  }
   .directions-btn{
     display:inline-flex; align-items:center; gap:6px;
-    margin-top:16px;
+    margin-top:0;
     background: var(--night-2); color: var(--gold);
     border: 1px solid var(--card-line);
     box-shadow: var(--shadow-sm);
@@ -115,6 +120,18 @@
   }
   .directions-btn:active{ transform: scale(0.97); box-shadow:none; }
   .directions-btn svg{ width:13px; height:13px; }
+  .book-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    background: var(--rani); color:#fff;
+    border: 1px solid var(--rani);
+    box-shadow: 0 6px 16px rgba(156,43,43,0.30);
+    padding: 9px 20px; border-radius: 999px;
+    font-family:'Work Sans', sans-serif; font-size:0.8rem; font-weight:700;
+    text-decoration:none; cursor:pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .book-btn:active{ transform: scale(0.97); box-shadow:none; }
+  .book-btn svg{ width:13px; height:13px; }
 
   /* ---------- Section label ---------- */
   .section-title{
@@ -488,10 +505,16 @@
       <div><span>Time</span><b>5:00–10:00 PM</b></div>
       <div><span>Venue</span><b id="evVenue">KL7, Patna</b></div>
     </div>
-    <a class="directions-btn" href="https://www.google.com/maps/dir/?api=1&destination=KL7+Patna" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-      Get Directions
-    </a>
+    <div class="hero-actions">
+      <a class="directions-btn" href="https://www.google.com/maps/dir/?api=1&destination=KL7+Patna" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        Get Directions
+      </a>
+      <a class="book-btn" href="#passSection">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z"/></svg>
+        Book Now
+      </a>
+    </div>
   </div>
 
   <div class="wrap">
@@ -500,7 +523,7 @@
     <div class="features" id="featuresGrid"></div>
   </div>
 
-  <div class="wrap">
+  <div class="wrap" id="passSection">
     <div class="section-title">Choose your day</div>
     <p class="section-hint">Three nights, three different experiences — pick the day that works for you.</p>
 
