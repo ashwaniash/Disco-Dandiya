@@ -661,22 +661,25 @@
     const amount = selected.unitPrice * qty; // in rupees
 
     try {
-      // 1. Create the booking row. In bypass mode it's inserted as already
-      //    paid; in normal mode it starts pending and is upgraded to paid
-      //    once Razorpay verification succeeds below.
-      const { data: booking, error: insertErr } = await sb
+      // 1. Create the booking row. We generate the id ourselves and insert
+      //    without reading it back, so this only needs an INSERT policy —
+      //    no RLS SELECT policy required (safer, and avoids the 401/403
+      //    "insert worked but read-back was blocked" failure mode).
+      const bookingId = (crypto.randomUUID && crypto.randomUUID()) ||
+        `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const { error: insertErr } = await sb
         .from('bookings')
         .insert({
+          id: bookingId,
           name, phone, email: email || null,
           pass_type: selected.type,
           event_date: selectedDay,
           quantity: qty,
           amount: amount,
           status: BYPASS_PAYMENT ? 'paid' : 'pending'
-        })
-        .select()
-        .single();
+        });
       if(insertErr) throw insertErr;
+      const booking = { id: bookingId };
 
       if(BYPASS_PAYMENT){
         // Skip Razorpay entirely — go straight to the confirmation screen.
