@@ -167,7 +167,8 @@
     display:flex; align-items:center; justify-content:center;
     flex-shrink:0;
   }
-  .feature .ficon img{ width:24px; height:24px; object-fit:contain; display:block; }
+  .feature .ficon:has(img), .feature .ficon.ficon-img{ width:56px; height:56px; background:none; border-radius:0; }
+  .feature .ficon img{ width:56px; height:56px; object-fit:contain; display:block; }
   .feature .ficon svg{
     width:20px; height:20px;
     stroke: var(--accent, var(--gold));
@@ -788,7 +789,7 @@
       const inner = f.icon_url
         ? '<img src="' + esc(f.icon_url) + '" alt="">'
         : featureIconSvg(f.icon);
-      const icon = '<div class="ficon">' + inner + '</div>';
+      const icon = '<div class="ficon' + (f.icon_url ? ' ficon-img' : '') + '">' + inner + '</div>';
       const text = '<div class="ftext"><div class="ftitle">' + esc(f.title) + '</div>' +
                    (f.sub ? '<div class="fsub">' + esc(f.sub) + '</div>' : '') + '</div>';
       return '<div class="feature ' + accent + (f.wide ? ' wide' : '') + '">' + icon + text + '</div>';
