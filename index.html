@@ -437,7 +437,7 @@
   const VERIFY_PAYMENT_FN = `${SUPABASE_URL}/functions/v1/verify-payment`;
   // ---------------------------------------------------
 
-  const supabase = (() => {
+  const sb = (() => {
     try {
       return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     } catch (e) {
@@ -459,8 +459,8 @@
 
   // ---- Hero background + logo, set from admin-uploaded images ----
   async function loadSiteConfig(){
-    if(!supabase) return;
-    const { data, error } = await supabase.from('site_config').select('*').eq('id', 1).maybeSingle();
+    if(!sb) return;
+    const { data, error } = await sb.from('site_config').select('*').eq('id', 1).maybeSingle();
     if(error || !data) return; // table not set up yet, or no row — keep default look
 
     const heroEl = document.getElementById('heroSection');
@@ -504,7 +504,7 @@
   }
 
   googleBtn.addEventListener('click', async () => {
-    if(!supabase){
+    if(!sb){
       showStatus('Supabase configure nahi hai.', false);
       return;
     }
@@ -512,14 +512,14 @@
     if(selected){
       sessionStorage.setItem(PENDING_KEY, JSON.stringify({ type: selected.type, qty, day: selectedDay }));
     }
-    await supabase.auth.signInWithOAuth({
+    await sb.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.href }
     });
   });
 
   signOutBtn.addEventListener('click', async () => {
-    if(supabase) await supabase.auth.signOut();
+    if(sb) await sb.auth.signOut();
     currentUser = null;
     signedInBadge.style.display = 'none';
     googleBtn.style.display = 'flex';
@@ -528,8 +528,8 @@
 
   // On load: pick up an existing Google session, and restore the pass
   // selection that was in progress before the OAuth redirect (if any).
-  if(supabase){
-    supabase.auth.getSession().then(({ data }) => {
+  if(sb){
+    sb.auth.getSession().then(({ data }) => {
       if(!data.session) return;
       applyUserToForm(data.session.user);
       const pendingRaw = sessionStorage.getItem(PENDING_KEY);
@@ -639,7 +639,7 @@
       showStatus('Naam aur valid 10-digit phone number bharein.', false);
       return;
     }
-    if(!supabase){
+    if(!sb){
       showStatus('Site abhi live nahi hui — SUPABASE_URL aur RAZORPAY_KEY_ID config karo (SETUP.md dekho).', false);
       return;
     }
@@ -650,7 +650,7 @@
 
     try {
       // 1. Create a pending booking row
-      const { data: booking, error: insertErr } = await supabase
+      const { data: booking, error: insertErr } = await sb
         .from('bookings')
         .insert({
           name, phone, email: email || null,
