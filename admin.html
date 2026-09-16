@@ -62,22 +62,63 @@
   .panel.active{ display:block; }
 
   /* Scan panel */
-  #qr-reader{ width:100%; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:#000; }
-  .scan-hint{ text-align:center; font-size:0.8rem; color:rgba(44,18,10,0.5); margin:10px 0 18px; }
+  #qr-reader{ width:100%; min-height:230px; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:#000; }
+  .scan-stage{ position:relative; }
+  .scan-hint{ text-align:center; font-size:0.8rem; color:rgba(44,18,10,0.5); margin:10px 0 12px; }
+  .scan-controls{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+  .scan-controls select{
+    flex:1; min-width:140px; padding:10px 12px; border-radius:8px; border:1px solid var(--line);
+    background:var(--night-2); color:var(--cream); font-size:0.82rem; font-family:'Work Sans',sans-serif;
+  }
+  .scan-controls button{
+    background:var(--night-2); border:1px solid var(--gold); color:var(--gold); border-radius:8px;
+    padding:10px 14px; font-weight:600; font-size:0.82rem; cursor:pointer; font-family:'Work Sans',sans-serif;
+  }
+  .scan-controls button.on{ background:var(--gold); color:#fff; }
+  .scan-controls button:disabled{ opacity:0.5; cursor:not-allowed; }
+
+  /* Scan result — full-screen-over-camera popup, so a fresh scan is always unmistakable */
+  .scan-overlay{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    padding:16px; background:rgba(0,0,0,0); pointer-events:none; opacity:0; transition:opacity 0.15s, background 0.15s;
+    border-radius:14px;
+  }
+  .scan-overlay.show{ background:rgba(10,4,2,0.72); pointer-events:auto; opacity:1; }
+  .scan-card{
+    width:100%; max-width:320px; border-radius:16px; padding:24px 20px; text-align:center;
+    background:var(--night-2); border:2px solid var(--line); box-shadow:0 12px 34px rgba(0,0,0,0.4);
+    transform:scale(0.85); opacity:0;
+  }
+  .scan-overlay.show .scan-card{ animation:scanPop 0.32s cubic-bezier(.2,1.4,.4,1) forwards; }
+  @keyframes scanPop{
+    0%{ transform:scale(0.8); opacity:0; }
+    60%{ transform:scale(1.04); opacity:1; }
+    100%{ transform:scale(1); opacity:1; }
+  }
+  .scan-overlay.ok .scan-card{ border-color:var(--teal); }
+  .scan-overlay.warn .scan-card{ border-color:var(--gold); }
+  .scan-overlay.err .scan-card{ border-color:var(--rani); }
+  .scan-card .icon{ font-size:2.8rem; margin-bottom:8px; line-height:1; }
+  .scan-card .title{ font-family:'Fraunces',serif; font-size:1.3rem; font-weight:600; margin-bottom:6px; }
+  .scan-overlay.ok .scan-card .title{ color:#2F5C34; }
+  .scan-overlay.warn .scan-card .title{ color:#7A5A1A; }
+  .scan-overlay.err .scan-card .title{ color:var(--rani); }
+  .scan-card .detail{ font-size:0.85rem; color:rgba(44,18,10,0.75); line-height:1.5; margin-bottom:16px; }
+  .scan-card .progress{ height:3px; background:var(--line); border-radius:99px; overflow:hidden; margin-bottom:16px; }
+  .scan-card .progress-bar{ height:100%; width:100%; background:var(--gold); transform-origin:left; }
+  .scan-overlay.ok .scan-card .progress-bar{ background:var(--teal); }
+  .scan-overlay.err .scan-card .progress-bar{ background:var(--rani); }
+  .scan-overlay.show .scan-card .progress-bar{ animation:scanCountdown linear forwards; }
+  @keyframes scanCountdown{ from{ transform:scaleX(1); } to{ transform:scaleX(0); } }
+  .scan-card .next-btn{
+    width:100%; background:var(--gold); color:#fff; border:none; border-radius:10px; padding:12px;
+    font-weight:700; font-size:0.92rem; cursor:pointer; font-family:'Work Sans',sans-serif;
+  }
   .manual{ display:flex; gap:8px; margin-bottom:18px; }
   .manual input{ flex:1; padding:11px 12px; border-radius:8px; border:1px solid var(--line); background:var(--night-2); color:var(--cream); font-size:0.85rem; }
   .manual button{ background:var(--night-2); border:1px solid var(--gold); color:var(--gold); border-radius:8px; padding:0 16px; font-weight:600; cursor:pointer; }
 
-  .result{
-    border-radius:14px; padding:20px; text-align:center; display:none;
-  }
-  .result.show{ display:block; }
-  .result.ok{ background:rgba(63,107,63,0.22); border:1px solid var(--teal); }
-  .result.warn{ background:rgba(184,134,46,0.18); border:1px solid var(--gold); }
-  .result.err{ background:rgba(156,43,43,0.18); border:1px solid var(--rani); }
-  .result .icon{ font-size:2.2rem; margin-bottom:6px; }
-  .result .title{ font-family:'Fraunces',serif; font-size:1.2rem; font-weight:600; margin-bottom:4px; }
-  .result .detail{ font-size:0.85rem; color:rgba(44,18,10,0.75); line-height:1.5; }
+  /* (old .result popup styles replaced by .scan-overlay/.scan-card above) */
 
   /* Stats */
   .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px; }
@@ -151,19 +192,31 @@
 
     <!-- SCAN -->
     <div class="panel active" id="panelScan">
-      <div id="qr-reader"></div>
+      <div class="scan-stage" id="scanStage">
+        <div id="qr-reader"></div>
+
+        <div class="scan-overlay" id="scanResult">
+          <div class="scan-card">
+            <div class="icon" id="resIcon"></div>
+            <div class="title" id="resTitle"></div>
+            <div class="detail" id="resDetail"></div>
+            <div class="progress"><div class="progress-bar" id="resProgress"></div></div>
+            <button class="next-btn" id="scanNextBtn" type="button">Scan Next →</button>
+          </div>
+        </div>
+      </div>
+
       <p class="scan-hint">Camera ko QR ke saamne le jaayein — auto-detect ho jaayega.</p>
-      <button id="retryCameraBtn" type="button" style="margin-bottom:14px;">Retry camera</button>
+
+      <div class="scan-controls">
+        <select id="cameraSelect" style="display:none;"></select>
+        <button id="torchBtn" type="button" style="display:none;">🔦 Flash</button>
+        <button id="retryCameraBtn" type="button">Retry camera</button>
+      </div>
 
       <div class="manual">
         <input id="manualId" type="text" placeholder="Ya ticket ID paste karein">
         <button id="manualBtn">Check</button>
-      </div>
-
-      <div class="result" id="scanResult">
-        <div class="icon" id="resIcon"></div>
-        <div class="title" id="resTitle"></div>
-        <div class="detail" id="resDetail"></div>
       </div>
     </div>
 
@@ -295,6 +348,7 @@
   });
 
   document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await stopScanner();
     await sb.auth.signOut();
     currentSession = null;
     showGate();
@@ -329,41 +383,144 @@
     document.getElementById('panelSettings').classList.toggle('active', tab === 'settings');
     if(tab === 'bookings') loadBookings();
     if(tab === 'settings') loadSettingsPreview();
-    if(tab === 'scan') initScanner();
+    if(tab === 'scan'){ initScanner(); }
+    else { stopScanner(); } // free the camera when not on the Scan tab (saves battery, avoids "camera busy" on other devices/tabs)
   }
 
   // ---- Scanner ----
   let scanner = null;
+  let scannerStarting = false;
+  let torchOn = false;
+  let availableCams = [];
   let lastScan = { text: '', at: 0 };
   let scanBusy = false;
 
-  let scannerStarting = false;
-  function initScanner(){
+  const cameraSelect = document.getElementById('cameraSelect');
+  const torchBtn = document.getElementById('torchBtn');
+  const retryCameraBtn = document.getElementById('retryCameraBtn');
+
+  function pickDefaultCamId(cams){
+    const back = cams.find(c => /back|rear|environment/i.test(c.label));
+    return (back || cams[cams.length - 1] || cams[0])?.id;
+  }
+
+  async function initScanner(preferredCamId){
     if(scanner || scannerStarting) return;
     if(typeof Html5Qrcode === 'undefined'){
       showResult('err', 'Scanner library load nahi hui', 'Internet slow ho sakta hai — page reload karke dobara try karein.');
       return;
     }
     scannerStarting = true;
+    retryCameraBtn.disabled = true;
     const instance = new Html5Qrcode("qr-reader");
-    Html5Qrcode.getCameras().then(cams => {
-      const camId = (cams.find(c => /back|rear|environment/i.test(c.label)) || cams[cams.length - 1] || cams[0])?.id;
-      return instance.start(
-        camId ? camId : { facingMode: "environment" },
-        { fps: 12, qrbox: { width: 230, height: 230 }, aspectRatio: 1 },
+
+    try {
+      // getCameras() itself triggers the permission prompt on first call
+      const cams = await Html5Qrcode.getCameras();
+      availableCams = cams || [];
+
+      if(!availableCams.length){
+        throw new Error('NO_CAMERAS_FOUND');
+      }
+
+      // populate camera picker (only useful when device has more than one camera)
+      if(availableCams.length > 1){
+        cameraSelect.innerHTML = availableCams.map(c => `<option value="${c.id}">${c.label || 'Camera'}</option>`).join('');
+        cameraSelect.style.display = 'block';
+      } else {
+        cameraSelect.style.display = 'none';
+      }
+
+      const camId = preferredCamId || pickDefaultCamId(availableCams) || availableCams[0].id;
+      if(availableCams.length > 1) cameraSelect.value = camId;
+
+      await instance.start(
+        camId,
+        { fps: 12, qrbox: (w, h) => {
+            // responsive box: works well on both small phones and wider tablets
+            const size = Math.floor(Math.min(w, h) * 0.7);
+            return { width: size, height: size };
+          }, aspectRatio: 1 },
         onScan,
-        () => {}
+        () => {} // per-frame "no code found" callback — intentionally silent
       );
-    }).then(() => {
+
       scanner = instance;
       scannerStarting = false;
-    }).catch(err => {
-      // Reset so the user can retry (e.g. after granting permission) without a full page reload
+      retryCameraBtn.disabled = false;
+      if(dismissTimer){ clearTimeout(dismissTimer); dismissTimer = null; }
+      scanOverlay.classList.remove('show');
+      setupTorchButton();
+
+    } catch(err) {
       scanner = null;
       scannerStarting = false;
-      showResult('err', 'Camera not available', 'Permission allow karke "Retry camera" dabayein, ya Manual ID se check-in karein.');
-    });
+      retryCameraBtn.disabled = false;
+      cameraSelect.style.display = 'none';
+      torchBtn.style.display = 'none';
+
+      const msg = String(err && err.message || err || '');
+      let detail;
+      if(/NotAllowedError|Permission denied/i.test(msg)){
+        detail = 'Camera permission block hai. Browser settings me is site ke liye Camera "Allow" karein, phir "Retry camera" dabayein.';
+      } else if(/NO_CAMERAS_FOUND|NotFoundError/i.test(msg)){
+        detail = 'Is device me koi camera nahi mila. Doosre device se try karein, ya Manual ID se check-in karein.';
+      } else if(/NotReadableError|TrackStartError/i.test(msg)){
+        detail = 'Camera kisi aur app/tab me busy hai. Usse band karke "Retry camera" dabayein.';
+      } else {
+        detail = 'Permission allow karke "Retry camera" dabayein, ya Manual ID se check-in karein.';
+      }
+      showResult('err', 'Camera not available', detail);
+    }
   }
+
+  async function stopScanner(){
+    if(!scanner) return;
+    try { await scanner.stop(); } catch(e) {}
+    try { scanner.clear(); } catch(e) {}
+    scanner = null;
+    torchOn = false;
+    torchBtn.style.display = 'none';
+    torchBtn.classList.remove('on');
+  }
+
+  function setupTorchButton(){
+    // Torch support depends on device + browser + selected camera (back camera on Android Chrome usually works;
+    // most iOS Safari versions don't expose torch control to the web at all — button just stays hidden there).
+    try {
+      const caps = scanner.getRunningTrackCapabilities();
+      if(caps && 'torch' in caps){
+        torchBtn.style.display = 'inline-block';
+        torchBtn.disabled = false;
+        torchBtn.textContent = '🔦 Flash';
+        torchBtn.classList.remove('on');
+        torchOn = false;
+      } else {
+        torchBtn.style.display = 'none';
+      }
+    } catch(e){
+      torchBtn.style.display = 'none';
+    }
+  }
+
+  torchBtn.addEventListener('click', async () => {
+    if(!scanner) return;
+    try {
+      const next = !torchOn;
+      await scanner.applyVideoConstraints({ advanced: [{ torch: next }] });
+      torchOn = next;
+      torchBtn.classList.toggle('on', torchOn);
+      torchBtn.textContent = torchOn ? '🔦 Flash ON' : '🔦 Flash';
+    } catch(e) {
+      // some devices report the capability but still refuse the constraint — fail quietly, keep old state
+    }
+  });
+
+  cameraSelect.addEventListener('change', async () => {
+    const camId = cameraSelect.value;
+    await stopScanner();
+    initScanner(camId);
+  });
 
   function onScan(text){
     const now = Date.now();
@@ -373,11 +530,57 @@
     checkIn(text.trim());
   }
 
-  document.getElementById('retryCameraBtn').addEventListener('click', () => {
-    scanner = null;
-    scannerStarting = false;
+  retryCameraBtn.addEventListener('click', async () => {
+    await stopScanner();
     initScanner();
   });
+
+  // ---- Scan result popup ----
+  const scanOverlay = document.getElementById('scanResult');
+  const resProgress = document.getElementById('resProgress');
+  const scanNextBtn = document.getElementById('scanNextBtn');
+  let dismissTimer = null;
+
+  function vibrate(pattern){
+    try { if(navigator.vibrate) navigator.vibrate(pattern); } catch(e){}
+  }
+
+  function showResult(type, title, detail, autoMs){
+    if(dismissTimer){ clearTimeout(dismissTimer); dismissTimer = null; }
+
+    // pause the camera feed while the popup is up, so it doesn't queue up more scans behind it
+    if(scanner){ try { scanner.pause(true); } catch(e){} }
+
+    document.getElementById('resIcon').textContent = type === 'ok' ? '✅' : type === 'warn' ? '⚠️' : '❌';
+    document.getElementById('resTitle').textContent = title;
+    document.getElementById('resDetail').textContent = detail;
+
+    // restart the popup + progress-bar animation every time, even if the previous
+    // result was the exact same type/text — so back-to-back scans always feel fresh
+    scanOverlay.classList.remove('show', 'ok', 'warn', 'err');
+    resProgress.style.animation = 'none';
+    void scanOverlay.offsetWidth; // force reflow so the next class add re-triggers CSS animation
+    scanOverlay.classList.add('show', type);
+
+    vibrate(type === 'ok' ? 60 : type === 'warn' ? [40, 60, 40] : [30, 60, 30, 60, 30]);
+
+    const duration = autoMs ?? (type === 'ok' ? 2200 : 3200);
+    if(duration > 0){
+      resProgress.style.animation = `scanCountdown ${duration}ms linear forwards`;
+      dismissTimer = setTimeout(dismissResult, duration);
+    } else {
+      resProgress.style.animation = 'none';
+    }
+  }
+
+  function dismissResult(){
+    if(dismissTimer){ clearTimeout(dismissTimer); dismissTimer = null; }
+    scanOverlay.classList.remove('show');
+    if(scanner){ try { scanner.resume(); } catch(e){} }
+    scanBusy = false;
+  }
+
+  scanNextBtn.addEventListener('click', dismissResult);
 
   document.getElementById('manualBtn').addEventListener('click', () => {
     const v = document.getElementById('manualId').value.trim();
@@ -393,7 +596,7 @@
         body: JSON.stringify({ booking_id: bookingId })
       });
       const data = await res.json();
-      if(res.status === 401){ showResult('err', 'Session expired', 'Dobara login karein.'); showGate(); return; }
+      if(res.status === 401){ showResult('err', 'Session expired', 'Dobara login karein.', 0); showGate(); return; }
       if(data.result === 'ok'){
         const b = data.booking;
         showResult('ok', '✓ Valid — Checked In', `${b.name} · ${b.pass_type.toUpperCase()} × ${b.quantity} · ${fmtDay(b.event_date)}`);
@@ -407,17 +610,7 @@
       }
     } catch(e){
       showResult('err', 'Network error', 'Dobara try karein.');
-    } finally {
-      setTimeout(() => { scanBusy = false; }, 1200);
     }
-  }
-
-  function showResult(type, title, detail){
-    const el = document.getElementById('scanResult');
-    el.className = 'result show ' + type;
-    document.getElementById('resIcon').textContent = type === 'ok' ? '✅' : type === 'warn' ? '⚠️' : '❌';
-    document.getElementById('resTitle').textContent = title;
-    document.getElementById('resDetail').textContent = detail;
   }
 
   // ---- Bookings ----
