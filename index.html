@@ -380,22 +380,43 @@
   }
   .success-sheet h2{ font-size:1.5rem; }
   .success-sheet p{ color: var(--muted); font-size:0.9rem; margin:8px 0 20px; }
+
+  /* Ticket card — styled like a real event ticket (logo header, QR, perforated divider, detail rows) */
+  .ticket-card{
+    background: var(--night-2); border:1px solid var(--card-line); border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm); text-align:left; margin-bottom:18px; position:relative;
+  }
+  .ticket-head{ display:flex; align-items:center; gap:12px; padding:18px 20px 16px; }
+  .ticket-logo, .ticket-logo-fallback{
+    width:46px; height:46px; border-radius:13px; flex-shrink:0;
+    background: rgba(184,134,46,0.13); object-fit:contain; padding:5px;
+  }
+  .ticket-logo-fallback{
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif; font-weight:700; font-size:1rem; color:var(--gold);
+  }
+  .ticket-head-text{ min-width:0; }
+  .ticket-event{ font-family:'Fraunces', serif; font-weight:700; font-size:1.08rem; color:var(--cream); line-height:1.25; }
+  .ticket-sub{ font-size:0.78rem; color:var(--rani); font-weight:600; margin-top:2px; }
+  .ticket-scallop{ position:relative; height:0; border-top:1.5px dashed var(--card-line); margin:0; }
+  .ticket-scallop::before, .ticket-scallop::after{
+    content:''; position:absolute; top:0; width:20px; height:20px; border-radius:50%;
+    background: var(--night); transform:translateY(-50%);
+  }
+  .ticket-scallop::before{ left:-10px; }
+  .ticket-scallop::after{ right:-10px; }
+  .ticket-qr{ display:flex; justify-content:center; padding:22px 18px 6px; }
   #qrBox canvas, #qrBox img{
     background: var(--night-2); padding:12px; border-radius: var(--r-md);
     box-shadow: var(--shadow-sm); display:block;
   }
-  .success-summary{
-    background: var(--night-2); border:1px solid var(--card-line);
-    box-shadow: var(--shadow-sm);
-    border-radius: var(--r-md);
-    padding:16px; text-align:left; font-size:0.85rem; margin-bottom:18px;
-  }
-  .success-summary div{
+  .ticket-details{ padding:6px 20px 20px; font-size:0.85rem; }
+  .ticket-details div{
     display:flex; justify-content:space-between; align-items:center; gap:12px;
-    padding:8px 0; border-bottom:1px solid var(--card-line);
+    padding:9px 0; border-bottom:1px solid var(--card-line);
   }
-  .success-summary div:last-child{ border-bottom:none; }
-  .success-summary span{ color: var(--muted-2); }
+  .ticket-details div:last-child{ border-bottom:none; }
+  .ticket-details span{ color: var(--muted-2); }
   .screenshot-note{
     display:flex; align-items:flex-start; gap:8px; text-align:left;
     background: rgba(184,134,46,0.10); border:1px solid rgba(184,134,46,0.28);
@@ -653,13 +674,26 @@
       </div>
       <h2 class="display">Booking Confirmed!</h2>
       <p>Show this QR code at entry.</p>
-      <div id="qrBox" style="display:flex; justify-content:center; margin-bottom:18px;"></div>
-      <div class="success-summary">
-        <div><span>Pass</span><b id="sumPass">—</b></div>
-        <div><span>Date</span><b id="sumDate">—</b></div>
-        <div><span>Amount paid</span><b id="sumAmt">—</b></div>
-        <div><span>Ticket ID</span><b id="sumId" style="font-size:0.72rem;">—</b></div>
+
+      <div class="ticket-card">
+        <div class="ticket-head">
+          <img id="ticketLogo" class="ticket-logo" src="" alt="" style="display:none;">
+          <div id="ticketLogoFallback" class="ticket-logo-fallback">DD</div>
+          <div class="ticket-head-text">
+            <div class="ticket-event">Disco Dandiya 7.0</div>
+            <div class="ticket-sub">Entry Ticket</div>
+          </div>
+        </div>
+        <div class="ticket-scallop"></div>
+        <div id="qrBox" class="ticket-qr"></div>
+        <div class="ticket-details">
+          <div><span>Pass</span><b id="sumPass">—</b></div>
+          <div><span>Date</span><b id="sumDate">—</b></div>
+          <div><span>Amount paid</span><b id="sumAmt">—</b></div>
+          <div><span>Ticket ID</span><b id="sumId" style="font-size:0.72rem;">—</b></div>
+        </div>
       </div>
+
       <div class="screenshot-note">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.5"/><path d="M8 5l1.5-2h5L16 5"/></svg>
         Take a screenshot of this ticket before downloading, just in case.
@@ -1078,6 +1112,18 @@
     document.getElementById('sumDate').textContent = selectedDay;
     document.getElementById('sumAmt').textContent = '₹' + amount.toLocaleString('en-IN');
     document.getElementById('sumId').textContent = booking.shortId;
+
+    const ticketLogoEl = document.getElementById('ticketLogo');
+    const ticketLogoFallbackEl = document.getElementById('ticketLogoFallback');
+    if(siteLogoUrl){
+      ticketLogoEl.src = siteLogoUrl;
+      ticketLogoEl.style.display = 'block';
+      ticketLogoFallbackEl.style.display = 'none';
+    } else {
+      ticketLogoEl.style.display = 'none';
+      ticketLogoFallbackEl.style.display = 'flex';
+    }
+
     document.getElementById('qrBox').innerHTML = '';
     if (typeof QRCode === 'undefined') {
       document.getElementById('qrBox').textContent = booking.id;
