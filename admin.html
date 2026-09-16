@@ -30,6 +30,7 @@
     margin-top:14px; background:var(--rani); color:#fff; border:none; padding:12px 26px; border-radius:8px;
     font-weight:600; cursor:pointer;
   }
+  .gate button:disabled{ opacity:0.6; cursor:not-allowed; }
   .gate .err{ color:var(--rani); font-size:0.82rem; margin-top:10px; min-height:1em; }
   .gate input[type="email"]{
     width:100%; max-width:260px; text-align:left; letter-spacing:normal; font-size:0.95rem;
@@ -262,19 +263,34 @@
   }
 
   document.getElementById('unlockBtn').addEventListener('click', async () => {
+    const unlockBtn = document.getElementById('unlockBtn');
+    const gateErr = document.getElementById('gateErr');
     const email = document.getElementById('emailInput').value.trim();
     const password = document.getElementById('passInput').value;
-    if(!email || !password) return;
-    document.getElementById('unlockBtn').textContent = 'Checking…';
-    document.getElementById('gateErr').textContent = '';
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    document.getElementById('unlockBtn').textContent = 'Login';
-    if(error){
-      document.getElementById('gateErr').textContent = 'Login fail: ' + error.message;
+    gateErr.textContent = '';
+    if(!email || !password){
+      gateErr.textContent = 'Email aur password dono bharo.';
       return;
     }
-    currentSession = data.session;
-    showApp();
+    unlockBtn.disabled = true;
+    unlockBtn.textContent = 'Checking…';
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if(error){
+        gateErr.textContent = 'Wrong ID ya password.';
+        unlockBtn.disabled = false;
+        unlockBtn.textContent = 'Login';
+        return;
+      }
+      currentSession = data.session;
+      unlockBtn.disabled = false;
+      unlockBtn.textContent = 'Login';
+      showApp();
+    } catch(e){
+      gateErr.textContent = 'Connection error: ' + e.message;
+      unlockBtn.disabled = false;
+      unlockBtn.textContent = 'Login';
+    }
   });
 
   document.getElementById('logoutBtn').addEventListener('click', async () => {
