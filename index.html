@@ -12,13 +12,13 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
   :root{
-    --night: #1B0E2B;
-    --night-2: #2A1745;
-    --gold: #E9A23B;
-    --rani: #E23E7D;
-    --teal: #0F6E6E;
-    --cream: #F5EFE6;
-    --line: rgba(245,239,230,0.18);
+    --night: #F2E7D3;
+    --night-2: #FFFBF2;
+    --gold: #B8862E;
+    --rani: #9C2B2B;
+    --teal: #3F6B3F;
+    --cream: #2C120A;
+    --line: rgba(44,18,10,0.16);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -42,8 +42,8 @@
     padding: 44px 20px 32px;
     text-align:center;
     background:
-      radial-gradient(circle at 15% 15%, rgba(233,162,59,0.25), transparent 45%),
-      radial-gradient(circle at 85% 20%, rgba(226,62,125,0.22), transparent 45%),
+      radial-gradient(circle at 15% 15%, rgba(184,134,46,0.16), transparent 45%),
+      radial-gradient(circle at 85% 20%, rgba(156,43,43,0.14), transparent 45%),
       var(--night);
     border-bottom: 1px solid var(--line);
     overflow:hidden;
@@ -51,7 +51,7 @@
   .hero svg{ width:64px; height:64px; margin-bottom:14px; }
   .hero .display{ font-size: 2.15rem; line-height:1.12; color: var(--cream); }
   .hero .display em{ font-style:normal; color: var(--gold); }
-  .hero p.sub{ margin:10px 0 0; color: rgba(245,239,230,0.75); font-size:0.98rem; }
+  .hero p.sub{ margin:10px 0 0; color: rgba(44,18,10,0.75); font-size:0.98rem; }
   .hero .meta{
     display:flex; justify-content:center; gap:18px; margin-top:18px;
     font-size:0.85rem; color: var(--cream);
@@ -67,7 +67,7 @@
     font-family:'Work Sans', sans-serif; font-size:0.76rem; font-weight:600;
     text-decoration:none;
   }
-  .directions-btn:active{ background: var(--gold); color: var(--night); }
+  .directions-btn:active{ background: var(--gold); color: var(--cream); }
   .directions-btn svg{ width:12px; height:12px; }
 
   /* Features */
@@ -94,7 +94,7 @@
     font-weight:600;
     margin: 30px 0 4px;
   }
-  .section-hint{ font-size:0.86rem; color:rgba(245,239,230,0.6); margin:0 0 16px; }
+  .section-hint{ font-size:0.86rem; color:rgba(44,18,10,0.6); margin:0 0 16px; }
 
   /* Pass ticket stub cards */
   .pass{
@@ -108,10 +108,10 @@
     cursor:pointer;
     transition: border-color .15s ease, background .15s ease;
   }
-  .pass.selected{ border-color: var(--gold); background:#33204f; }
+  .pass.selected{ border-color: var(--gold); background:#F6E7BC; }
   .pass-main{ flex:1; padding:16px 14px; }
   .pass-main .name{ font-family:'Fraunces', serif; font-size:1.08rem; font-weight:600; }
-  .pass-main .desc{ font-size:0.82rem; color:rgba(245,239,230,0.65); margin-top:3px; }
+  .pass-main .desc{ font-size:0.82rem; color:rgba(44,18,10,0.65); margin-top:3px; }
   .pass-price{
     width:104px;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -120,7 +120,7 @@
     text-align:center;
   }
   .pass-price .amt{ font-family:'Fraunces', serif; font-size:1.2rem; font-weight:600; color:var(--gold); }
-  .pass-price .per{ font-size:0.68rem; color:rgba(245,239,230,0.55); margin-top:1px; }
+  .pass-price .per{ font-size:0.68rem; color:rgba(44,18,10,0.55); margin-top:1px; }
 
   .qty{
     display:flex; align-items:center; gap:10px;
@@ -135,17 +135,39 @@
   .qty .n{ min-width:20px; text-align:center; font-weight:600; }
 
   .day-btn{ background: var(--night-2); color: var(--cream); border:1px solid var(--line); font-family:'Work Sans', sans-serif; }
-  .day-btn.selected{ background: var(--gold); border-color: var(--gold); color: var(--night); }
+  .day-btn.selected{ background: var(--gold); border-color: var(--gold); color: var(--cream); }
 
   /* Form */
   .field{ margin-bottom:14px; }
-  .field label{ display:block; font-size:0.82rem; color:rgba(245,239,230,0.65); margin-bottom:6px; }
+  .field label{ display:block; font-size:0.82rem; color:rgba(44,18,10,0.65); margin-bottom:6px; }
   .field input{
     width:100%; padding:12px 13px; border-radius:8px;
     border:1px solid var(--line); background: var(--night-2); color:var(--cream);
     font-family:'Work Sans', sans-serif; font-size:0.96rem;
   }
   .field input:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+
+  .google-btn{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
+    background:#fff; color:#2C120A; border:1px solid var(--line);
+    padding:12px; border-radius:8px; font-family:'Work Sans', sans-serif;
+    font-weight:600; font-size:0.92rem; cursor:pointer; margin-bottom:10px;
+  }
+  .google-btn svg{ width:18px; height:18px; }
+  .or-divider{
+    display:flex; align-items:center; gap:10px; margin:14px 0;
+    color:rgba(44,18,10,0.45); font-size:0.75rem;
+  }
+  .or-divider::before, .or-divider::after{ content:''; flex:1; height:1px; background:var(--line); }
+  .signed-in-badge{
+    display:flex; align-items:center; justify-content:space-between;
+    background:rgba(63,107,63,0.18); border:1px solid var(--teal);
+    border-radius:8px; padding:9px 13px; margin-bottom:14px; font-size:0.82rem;
+  }
+  .signed-in-badge button{
+    background:transparent; border:none; color:var(--gold); font-size:0.78rem;
+    font-weight:600; cursor:pointer; padding:0;
+  }
 
   /* Sticky pay bar */
   .paybar{
@@ -156,7 +178,7 @@
     display:flex; align-items:center; justify-content:space-between; gap:14px;
   }
   .paybar .total{ line-height:1.1; }
-  .paybar .total span{ display:block; font-size:0.72rem; color:rgba(245,239,230,0.55); }
+  .paybar .total span{ display:block; font-size:0.72rem; color:rgba(44,18,10,0.55); }
   .paybar .total b{ font-family:'Fraunces', serif; font-size:1.25rem; color:var(--gold); }
   .paybar button{
     background: var(--rani); color:#fff; border:none;
@@ -170,8 +192,8 @@
     display:none; margin: 6px 0 0; padding:11px 13px; border-radius:8px; font-size:0.85rem;
   }
   .status.show{ display:block; }
-  .status.ok{ background: rgba(15,110,110,0.25); border:1px solid var(--teal); }
-  .status.err{ background: rgba(226,62,125,0.18); border:1px solid var(--rani); }
+  .status.ok{ background: rgba(63,107,63,0.25); border:1px solid var(--teal); }
+  .status.err{ background: rgba(156,43,43,0.18); border:1px solid var(--rani); }
 
   /* Modal sheets */
   .overlay{
@@ -216,37 +238,30 @@
   .success-sheet{ text-align:center; padding-top: 18px; }
   .success-icon{
     width:56px; height:56px; border-radius:50%;
-    background: rgba(15,110,110,0.25); border:1px solid var(--teal);
+    background: rgba(63,107,63,0.25); border:1px solid var(--teal);
     display:flex; align-items:center; justify-content:center;
     margin: 6px auto 16px;
   }
   .success-sheet h2{ font-size:1.4rem; }
-  .success-sheet p{ color:rgba(245,239,230,0.7); font-size:0.9rem; margin:8px 0 20px; }
+  .success-sheet p{ color:rgba(44,18,10,0.7); font-size:0.9rem; margin:8px 0 20px; }
   .success-summary{
     background: var(--night-2); border:1px dashed var(--line); border-radius:10px;
     padding:14px; text-align:left; font-size:0.85rem; margin-bottom:20px;
   }
   .success-summary div{ display:flex; justify-content:space-between; padding:4px 0; }
-  .success-summary span{ color:rgba(245,239,230,0.55); }
+  .success-summary span{ color:rgba(44,18,10,0.55); }
   .done-btn{
-    width:100%; background: var(--gold); color: var(--night); border:none;
+    width:100%; background: var(--gold); color: var(--cream); border:none;
     padding:14px; border-radius:8px; font-weight:600; font-size:0.98rem; cursor:pointer;
   }
 
-  footer{ text-align:center; font-size:0.75rem; color:rgba(245,239,230,0.4); padding: 30px 20px; }
+  footer{ text-align:center; font-size:0.75rem; color:rgba(44,18,10,0.4); padding: 30px 20px; }
 </style>
 </head>
 <body>
 
-  <div class="hero">
-    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <line x1="18" y1="8" x2="42" y2="56" stroke="#E9A23B" stroke-width="3" stroke-linecap="round"/>
-      <line x1="46" y1="8" x2="22" y2="56" stroke="#E23E7D" stroke-width="3" stroke-linecap="round"/>
-      <circle cx="18" cy="8" r="3.5" fill="#E9A23B"/>
-      <circle cx="46" cy="8" r="3.5" fill="#E23E7D"/>
-    </svg>
-    <h1 class="display">Dandiya <em>Raas</em> Night</h1>
-    <p class="sub">Ek raat, sau dhun, aur bina rukе ghoomta dandiya.</p>
+  <div class="hero" id="heroSection">
+    <img id="heroLogo" src="" alt="Event logo" style="display:none; max-width:230px; width:60%; margin:0 auto 10px; height:auto;">
     <div class="meta">
       <div><span>Dates</span><b>16–18 Oct 2026</b></div>
       <div><span>Time</span><b>5:00–10:00 PM</b></div>
@@ -261,23 +276,23 @@
   <div class="wrap">
     <div class="features">
       <div class="feature">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#E9A23B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="2" y="15" width="5" height="6" rx="1.5"/><rect x="17" y="15" width="5" height="6" rx="1.5"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#B8862E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="2" y="15" width="5" height="6" rx="1.5"/><rect x="17" y="15" width="5" height="6" rx="1.5"/></svg>
         <span>Celebrity DJ</span>
       </div>
       <div class="feature">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#E23E7D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v6a2 2 0 0 0 2 2v12"/><path d="M7 2v6a2 2 0 0 1-2 2v12"/><path d="M17 2c-1.5 2-2 4-2 7 0 2 1 3 2 3v10"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#9C2B2B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v6a2 2 0 0 0 2 2v12"/><path d="M7 2v6a2 2 0 0 1-2 2v12"/><path d="M17 2c-1.5 2-2 4-2 7 0 2 1 3 2 3v10"/></svg>
         <span>Food</span>
       </div>
       <div class="feature">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#0F6E6E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 6a9 9 0 0 1 0 12"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#3F6B3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 6a9 9 0 0 1 0 12"/></svg>
         <span>Best Sound System</span>
       </div>
       <div class="feature">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#E9A23B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#B8862E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/></svg>
         <span>Bihar Police Security</span>
       </div>
       <div class="feature wide">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#E23E7D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#9C2B2B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
         <span>Family &amp; Couple Friendly Environment</span>
       </div>
     </div>
@@ -360,6 +375,17 @@
         <b id="sheetOrderAmt">₹0</b>
       </div>
 
+      <div id="signedInBadge" class="signed-in-badge" style="display:none;">
+        <span id="signedInEmail"></span>
+        <button type="button" id="signOutBtn">Not you? Sign out</button>
+      </div>
+
+      <button type="button" id="googleBtn" class="google-btn">
+        <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.7 18.9 12 24 12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4c-7.6 0-14.1 4.3-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.4C29.7 35.4 27 36 24 36c-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.9 39.6 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.6 5.4C41.9 35.8 44 30.3 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+        Continue with Google
+      </button>
+      <div class="or-divider">ya guest ke roop mein details bharein</div>
+
       <div class="field">
         <label for="name">Full name</label>
         <input id="name" type="text" placeholder="Aapka naam" autocomplete="name">
@@ -384,7 +410,7 @@
     <div class="sheet success-sheet">
       <div class="sheet-handle"></div>
       <div class="success-icon">
-        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#0F6E6E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#3F6B3F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
       </div>
       <h2 class="display">Booking Confirmed!</h2>
       <p>Entry par yahi QR dikhana hoga.</p>
@@ -405,7 +431,7 @@
   // ---- CONFIG: fill these in before going live ----
   const SUPABASE_URL = "https://trhkmjqwkjvirqwabaxg.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_Y6OYlJ4aOUNP0W3aN09KkQ_bcMkthpY";
-  const RAZORPAY_KEY_ID = "YOUR_RAZORPAY_KEY_ID"; // public key, safe on client
+  const RAZORPAY_KEY_ID = "YOUR_RAZORPAY_KEY_ID"; // public key, safe on client — fill this in separately
   // Edge Function endpoints (deployed from supabase-functions/ folder)
   const CREATE_ORDER_FN = `${SUPABASE_URL}/functions/v1/create-order`;
   const VERIFY_PAYMENT_FN = `${SUPABASE_URL}/functions/v1/verify-payment`;
@@ -423,6 +449,106 @@
   let selected = null; // { type, unitPrice, per, label }
   let qty = 1;
   let selectedDay = document.querySelector('.day-btn.selected').dataset.day;
+  let currentUser = null; // set if signed in with Google
+
+  const PENDING_KEY = 'dandiya_pending_selection';
+  const googleBtn = document.getElementById('googleBtn');
+  const signedInBadge = document.getElementById('signedInBadge');
+  const signedInEmail = document.getElementById('signedInEmail');
+  const signOutBtn = document.getElementById('signOutBtn');
+
+  // ---- Hero background + logo, set from admin-uploaded images ----
+  async function loadSiteConfig(){
+    if(!supabase) return;
+    const { data, error } = await supabase.from('site_config').select('*').eq('id', 1).maybeSingle();
+    if(error || !data) return; // table not set up yet, or no row — keep default look
+
+    const heroEl = document.getElementById('heroSection');
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+    const bgUrl = isMobile
+      ? (data.hero_bg_mobile_url || data.hero_bg_desktop_url)
+      : (data.hero_bg_desktop_url || data.hero_bg_mobile_url);
+
+    if(bgUrl){
+      // soft cream wash over the photo so heading/meta text stays readable
+      heroEl.style.backgroundImage = `linear-gradient(rgba(242,231,211,0.55), rgba(242,231,211,0.72)), url('${bgUrl}')`;
+      heroEl.style.backgroundSize = 'cover';
+      heroEl.style.backgroundPosition = 'center';
+      heroEl.style.backgroundRepeat = 'no-repeat';
+    }
+    if(data.logo_url){
+      const logoEl = document.getElementById('heroLogo');
+      logoEl.src = data.logo_url;
+      logoEl.style.display = 'block';
+    }
+  }
+  loadSiteConfig();
+  let siteConfigResizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(siteConfigResizeTimer);
+    siteConfigResizeTimer = setTimeout(loadSiteConfig, 300);
+  });
+
+  function applyUserToForm(user){
+    currentUser = user;
+    if(!user) return;
+    signedInBadge.style.display = 'flex';
+    signedInEmail.textContent = 'Signed in as ' + (user.email || 'Google account');
+    googleBtn.style.display = 'none';
+    document.querySelector('.or-divider').style.display = 'none';
+    const meta = user.user_metadata || {};
+    const nameEl = document.getElementById('name');
+    const emailEl = document.getElementById('email');
+    if(!nameEl.value) nameEl.value = meta.full_name || meta.name || '';
+    if(!emailEl.value) emailEl.value = user.email || '';
+  }
+
+  googleBtn.addEventListener('click', async () => {
+    if(!supabase){
+      showStatus('Supabase configure nahi hai.', false);
+      return;
+    }
+    // Save current selection so we can restore it after the OAuth redirect
+    if(selected){
+      sessionStorage.setItem(PENDING_KEY, JSON.stringify({ type: selected.type, qty, day: selectedDay }));
+    }
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.href }
+    });
+  });
+
+  signOutBtn.addEventListener('click', async () => {
+    if(supabase) await supabase.auth.signOut();
+    currentUser = null;
+    signedInBadge.style.display = 'none';
+    googleBtn.style.display = 'flex';
+    document.querySelector('.or-divider').style.display = 'flex';
+  });
+
+  // On load: pick up an existing Google session, and restore the pass
+  // selection that was in progress before the OAuth redirect (if any).
+  if(supabase){
+    supabase.auth.getSession().then(({ data }) => {
+      if(!data.session) return;
+      applyUserToForm(data.session.user);
+      const pendingRaw = sessionStorage.getItem(PENDING_KEY);
+      if(pendingRaw){
+        sessionStorage.removeItem(PENDING_KEY);
+        try {
+          const pending = JSON.parse(pendingRaw);
+          const el = document.querySelector(`.pass[data-type="${pending.type}"]`);
+          const dayBtn = document.querySelector(`.day-btn[data-day="${pending.day}"]`);
+          if(el){
+            el.querySelector('.n').textContent = pending.qty;
+            el.click(); // selects pass, sets `selected` and `qty`, refreshes totals
+          }
+          if(dayBtn) dayBtn.click();
+          if(selected) continueBtn.click(); // reopen details sheet
+        } catch(e){ /* ignore malformed pending selection */ }
+      }
+    });
+  }
 
   document.querySelectorAll('.day-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -556,7 +682,7 @@
         description: `${selected.label} × ${qty} — ${selectedDay}`,
         order_id: order.id,
         prefill: { name, contact: phone, email },
-        theme: { color: '#E23E7D' },
+        theme: { color: '#9C2B2B' },
         handler: async function(response){
           // 4. Verify payment server-side and mark booking as paid
           const verifyRes = await fetch(VERIFY_PAYMENT_FN, {
@@ -577,7 +703,7 @@
             document.getElementById('sumAmt').textContent = '₹' + amount.toLocaleString('en-IN');
             document.getElementById('sumId').textContent = booking.id;
             document.getElementById('qrBox').innerHTML = '';
-            QRCode.toCanvas(booking.id, { width: 168, margin: 1, color: { dark: '#1B0E2B', light: '#F5EFE6' } }, (err, canvas) => {
+            QRCode.toCanvas(booking.id, { width: 168, margin: 1, color: { dark: '#2C120A', light: '#FFFBF2' } }, (err, canvas) => {
               if(!err){
                 canvas.style.borderRadius = '10px';
                 document.getElementById('qrBox').appendChild(canvas);
