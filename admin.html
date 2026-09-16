@@ -173,18 +173,14 @@
   /* Stats */
   .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
   .stat{
-    background:var(--night-2); border:1px solid var(--line); border-radius:var(--r-md);
-    box-shadow:var(--shadow-sm); padding:14px 10px; text-align:left;
-    display:flex; flex-direction:column; gap:10px;
+    background:var(--night-2); border:1px solid var(--line); border-left:4px solid transparent; border-radius:var(--r-md);
+    box-shadow:var(--shadow-sm); padding:16px 14px; text-align:left;
+    display:flex; flex-direction:column; gap:6px;
   }
-  .stat .stat-icon{
-    width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center;
-  }
-  .stat .stat-icon svg{ width:15px; height:15px; }
-  .stat.acc-gold .stat-icon{ background:var(--gold-soft); color:var(--gold); }
-  .stat.acc-teal .stat-icon{ background:var(--teal-soft); color:var(--teal); }
-  .stat.acc-rani .stat-icon{ background:var(--rani-soft); color:var(--rani); }
-  .stat.acc-violet .stat-icon{ background:var(--violet-soft); color:var(--violet); }
+  .stat.acc-gold{ border-left-color:var(--gold); }
+  .stat.acc-teal{ border-left-color:var(--teal); }
+  .stat.acc-rani{ border-left-color:var(--rani); }
+  .stat.acc-violet{ border-left-color:var(--violet); }
   .stat b{ display:block; font-family:'Plus Jakarta Sans',sans-serif; font-size:1.28rem; line-height:1; color:var(--cream); }
   .stat span{ font-size:0.68rem; color:var(--muted); font-weight:600; }
 
@@ -460,19 +456,15 @@
     <div class="panel" id="panelBookings">
       <div class="stats" id="stats">
         <div class="stat acc-gold">
-          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z"/></svg></div>
           <b id="stTotal">0</b><span>Bookings</span>
         </div>
         <div class="stat acc-teal">
-          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
           <b id="stPaid">0</b><span>Paid</span>
         </div>
         <div class="stat acc-rani">
-          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
           <b id="stIn">0</b><span>Checked-in</span>
         </div>
         <div class="stat acc-violet">
-          <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12l-1.5 5.5a5 5 0 0 1-9 0Z"/><path d="M12 15v5"/><path d="M8.5 20h7"/></svg></div>
           <b id="stRev">₹0</b><span>Revenue</span>
         </div>
       </div>
@@ -556,6 +548,16 @@
         <input type="file" id="fileLogo" accept="image/png,image/webp">
         <div class="settings-status" id="statusLogo"></div>
       </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="bookingModalOverlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="display" id="modalName">Booking</div>
+        <button class="modal-close" id="modalCloseBtn" type="button" aria-label="Close">✕</button>
+      </div>
+      <div id="modalBody"></div>
     </div>
   </div>
 
@@ -1446,16 +1448,5 @@
     });
   });
 </script>
-
-  <div class="modal-overlay" id="bookingModalOverlay">
-    <div class="modal-card">
-      <div class="modal-header">
-        <div class="display" id="modalName">Booking</div>
-        <button class="modal-close" id="modalCloseBtn" type="button" aria-label="Close">✕</button>
-      </div>
-      <div id="modalBody"></div>
-    </div>
-  </div>
-
 </body>
 </html>
