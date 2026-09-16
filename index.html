@@ -107,6 +107,9 @@
     display:flex; align-items:center; justify-content:center;
     flex-shrink:0;
   }
+  .feature .ficon img{
+    width:24px; height:24px; object-fit:contain; display:block;
+  }
   .feature .ficon svg{
     width:19px; height:19px;
     stroke: var(--accent, var(--gold));
@@ -309,8 +312,8 @@
   </div>
 
   <div class="wrap">
-    <div class="section-title">Kya milega</div>
-    <p class="section-hint">Teen raat, ek hi ground — sab arrangement ready hai.</p>
+    <div class="section-title">Event Highlights</div>
+    <p class="section-hint">Sound, security aur service — teen raat ke liye sab kuch ready.</p>
     <div class="features" id="featuresGrid"></div>
   </div>
 
@@ -524,7 +527,10 @@
     const items = (Array.isArray(list) && list.length) ? list : DEFAULT_FEATURES;
     grid.innerHTML = items.filter(f => f && f.title).map(f => {
       const accent = FEATURE_ACCENTS[f.accent] || 'acc-gold';
-      const icon = '<div class="ficon">' + featureIconSvg(f.icon) + '</div>';
+      const inner = f.icon_url
+        ? '<img src="' + esc(f.icon_url) + '" alt="">'
+        : featureIconSvg(f.icon);
+      const icon = '<div class="ficon">' + inner + '</div>';
       const text = '<div class="ftext"><div class="ftitle">' + esc(f.title) + '</div>' +
                    (f.sub ? '<div class="fsub">' + esc(f.sub) + '</div>' : '') + '</div>';
       return '<div class="feature ' + accent + (f.wide ? ' wide' : '') + '">' + icon + text + '</div>';
