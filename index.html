@@ -399,6 +399,33 @@
     border:1px solid var(--card-line); box-shadow: var(--shadow-sm);
   }
 
+  /* ---------- Previous year glimpses (auto-scrolling gallery) ---------- */
+  .gallery-scroll{
+    overflow:hidden;
+    position:relative;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  }
+  .gallery-track{
+    display:flex;
+    gap:12px;
+    width:max-content;
+    animation: galleryScroll linear infinite;
+  }
+  .gallery-track img{
+    width:150px; height:190px; object-fit:cover;
+    border-radius: var(--r-md);
+    border:1px solid var(--card-line);
+    box-shadow: var(--shadow-sm);
+    flex-shrink:0;
+    display:block;
+    background: var(--night-2);
+  }
+  @keyframes galleryScroll{
+    from{ transform: translateX(0); }
+    to{ transform: translateX(-50%); }
+  }
+
   footer{ text-align:center; font-size:0.74rem; color: var(--muted-2); padding: 32px 20px; }
   .footer-logo-box{
     width:100%; max-width:90px; height:36px;
@@ -492,6 +519,14 @@
       <div class="pass-price"><div class="amt">₹1,499</div><div class="per">per pass</div></div>
     </div>
 
+  </div>
+
+  <div class="wrap" id="gallerySection" style="display:none;">
+    <div class="section-title">Previous Year Glimpses</div>
+    <p class="section-hint">A peek back at the magic from last year.</p>
+    <div class="gallery-scroll">
+      <div class="gallery-track" id="galleryTrack"></div>
+    </div>
   </div>
 
   <div class="paybar">
@@ -694,6 +729,24 @@
       let list = data.features;
       if(typeof list === 'string'){ try { list = JSON.parse(list); } catch(e){ list = null; } }
       if(Array.isArray(list) && list.length) renderFeatures(list);
+    }
+
+    let gallery = data.gallery_images;
+    if(typeof gallery === 'string'){ try { gallery = JSON.parse(gallery); } catch(e){ gallery = null; } }
+    if(Array.isArray(gallery)){
+      const photos = gallery.filter(Boolean);
+      const track = document.getElementById('galleryTrack');
+      const section = document.getElementById('gallerySection');
+      if(photos.length){
+        const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+        const imgsHtml = photos.map(url => '<img src="' + esc(url) + '" alt="Glimpse from a previous year" loading="lazy">').join('');
+        // duplicate the strip so the scroll loop is seamless
+        track.innerHTML = imgsHtml + imgsHtml;
+        track.style.animationDuration = (photos.length * 4) + 's';
+        section.style.display = '';
+      } else {
+        section.style.display = 'none';
+      }
     }
   }
   loadSiteConfig();
