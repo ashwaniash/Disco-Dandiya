@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dandiya Raas Night — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --night:#F2E7D3; --night-2:#FFFBF2; --gold:#B8862E; --rani:#9C2B2B; --teal:#3F6B3F;
+    --cream:#2C120A; --line:rgba(44,18,10,0.16);
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--night); color:var(--cream); font-family:'Work Sans',sans-serif; min-height:100vh; }
+  h1,.display{ font-family:'Fraunces',serif; font-weight:600; margin:0; }
+  .wrap{ max-width:640px; margin:0 auto; padding: 18px 16px 40px; }
+
+  /* PIN gate */
+  .gate{ min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center; }
+  .gate .display{ font-size:1.6rem; margin-bottom:6px; }
+  .gate p{ color:rgba(44,18,10,0.6); font-size:0.88rem; margin:0 0 20px; }
+  .gate input{
+    width:100%; max-width:220px; text-align:center; letter-spacing:6px; font-size:1.3rem;
+    padding:14px; border-radius:10px; border:1px solid var(--line); background:var(--night-2); color:var(--cream);
+  }
+  .gate button{
+    margin-top:14px; background:var(--rani); color:#fff; border:none; padding:12px 26px; border-radius:8px;
+    font-weight:600; cursor:pointer;
+  }
+  .gate .err{ color:var(--rani); font-size:0.82rem; margin-top:10px; min-height:1em; }
+  .gate input[type="email"]{
+    width:100%; max-width:260px; text-align:left; letter-spacing:normal; font-size:0.95rem;
+    padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--night-2); color:var(--cream);
+    margin-bottom:10px; font-family:'Work Sans',sans-serif;
+  }
+  .gate input[type="password"]#passInput{
+    width:100%; max-width:260px; text-align:left; letter-spacing:normal; font-size:0.95rem;
+    padding:12px 14px;
+  }
+
+  /* Header + tabs */
+  header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  header .display{ font-size:1.3rem; }
+  header .sub{ font-size:0.75rem; color:rgba(44,18,10,0.5); }
+  .logout-btn{
+    background:transparent; border:1px solid var(--line); color:rgba(44,18,10,0.7);
+    border-radius:8px; padding:7px 12px; font-family:'Work Sans',sans-serif; font-size:0.78rem;
+    font-weight:600; cursor:pointer;
+  }
+  .tabs{ display:flex; gap:8px; margin-bottom:18px; background:var(--night-2); border:1px solid var(--line); border-radius:10px; padding:4px; }
+  .tabs button{
+    flex:1; padding:10px; border:none; border-radius:7px; background:transparent; color:rgba(44,18,10,0.6);
+    font-family:'Work Sans',sans-serif; font-weight:600; font-size:0.88rem; cursor:pointer;
+  }
+  .tabs button.active{ background:var(--gold); color:var(--cream); }
+
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+
+  /* Scan panel */
+  #qr-reader{ width:100%; border-radius:14px; overflow:hidden; border:1px solid var(--line); background:#000; }
+  .scan-hint{ text-align:center; font-size:0.8rem; color:rgba(44,18,10,0.5); margin:10px 0 18px; }
+  .manual{ display:flex; gap:8px; margin-bottom:18px; }
+  .manual input{ flex:1; padding:11px 12px; border-radius:8px; border:1px solid var(--line); background:var(--night-2); color:var(--cream); font-size:0.85rem; }
+  .manual button{ background:var(--night-2); border:1px solid var(--gold); color:var(--gold); border-radius:8px; padding:0 16px; font-weight:600; cursor:pointer; }
+
+  .result{
+    border-radius:14px; padding:20px; text-align:center; display:none;
+  }
+  .result.show{ display:block; }
+  .result.ok{ background:rgba(63,107,63,0.22); border:1px solid var(--teal); }
+  .result.warn{ background:rgba(184,134,46,0.18); border:1px solid var(--gold); }
+  .result.err{ background:rgba(156,43,43,0.18); border:1px solid var(--rani); }
+  .result .icon{ font-size:2.2rem; margin-bottom:6px; }
+  .result .title{ font-family:'Fraunces',serif; font-size:1.2rem; font-weight:600; margin-bottom:4px; }
+  .result .detail{ font-size:0.85rem; color:rgba(44,18,10,0.75); line-height:1.5; }
+
+  /* Stats */
+  .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px; }
+  .stat{ background:var(--night-2); border:1px solid var(--line); border-radius:10px; padding:10px 6px; text-align:center; }
+  .stat b{ display:block; font-family:'Fraunces',serif; font-size:1.15rem; color:var(--gold); }
+  .stat span{ font-size:0.65rem; color:rgba(44,18,10,0.55); }
+
+  /* Bookings */
+  .filters{ display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+  .filters input, .filters select{
+    padding:9px 11px; border-radius:8px; border:1px solid var(--line); background:var(--night-2); color:var(--cream); font-size:0.82rem;
+  }
+  .filters input{ flex:1; min-width:140px; }
+  table{ width:100%; border-collapse:collapse; font-size:0.78rem; }
+  thead th{ text-align:left; color:rgba(44,18,10,0.5); font-weight:600; padding:8px 6px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  tbody td{ padding:9px 6px; border-bottom:1px solid rgba(44,18,10,0.08); white-space:nowrap; }
+  tbody tr:hover{ background:rgba(44,18,10,0.04); }
+  .badge{ padding:2px 8px; border-radius:999px; font-size:0.68rem; font-weight:600; }
+  .badge.paid{ background:rgba(63,107,63,0.18); color:#2F5C34; }
+  .badge.pending{ background:rgba(184,134,46,0.25); color:#7A5A1A; }
+  .badge.failed{ background:rgba(156,43,43,0.25); color:var(--rani); }
+  .badge.in{ background:rgba(184,134,46,0.3); color:#7A5A1A; }
+  .table-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:10px; }
+  .loading{ text-align:center; padding:30px; color:rgba(44,18,10,0.5); font-size:0.85rem; }
+
+  /* Settings */
+  .settings-group{ margin-bottom:26px; }
+  .settings-group label{ display:block; font-weight:600; margin-bottom:4px; }
+  .settings-hint{ font-size:0.78rem; color:rgba(44,18,10,0.55); margin:0 0 10px; }
+  .settings-preview{
+    display:block; max-width:100%; max-height:160px; border-radius:10px;
+    border:1px solid var(--line); margin-bottom:10px; background:var(--night-2);
+  }
+  .settings-preview-logo{
+    max-height:90px; width:auto; padding:8px;
+    background:repeating-conic-gradient(#e4e4e4 0% 25%, #fff 0% 50%) 0 0 / 16px 16px;
+  }
+  .settings-group input[type="file"]{ font-size:0.82rem; font-family:'Work Sans',sans-serif; }
+  .settings-status{ font-size:0.78rem; margin-top:8px; min-height:1em; font-weight:600; }
+  .settings-status.ok{ color:var(--teal); }
+  .settings-status.err{ color:var(--rani); }
+</style>
+</head>
+<body>
+
+  <div class="gate" id="gate">
+    <div class="display">Admin Access</div>
+    <p>Apne admin email aur password se login karein.</p>
+    <input id="emailInput" type="email" placeholder="you@example.com" autocomplete="username">
+    <br>
+    <input id="passInput" type="password" placeholder="Password" autocomplete="current-password">
+    <br>
+    <button id="unlockBtn">Login</button>
+    <div class="err" id="gateErr"></div>
+  </div>
+
+  <div class="wrap" id="app" style="display:none;">
+    <header>
+      <div>
+        <div class="display">Dandiya Admin</div>
+        <div class="sub">16–18 Oct · KL7, Patna</div>
+      </div>
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </header>
+
+    <div class="tabs">
+      <button id="tabScanBtn" class="active">Scan</button>
+      <button id="tabBookingsBtn">Bookings</button>
+      <button id="tabSettingsBtn">Settings</button>
+    </div>
+
+    <!-- SCAN -->
+    <div class="panel active" id="panelScan">
+      <div id="qr-reader"></div>
+      <p class="scan-hint">Camera ko QR ke saamne le jaayein — auto-detect ho jaayega.</p>
+
+      <div class="manual">
+        <input id="manualId" type="text" placeholder="Ya ticket ID paste karein">
+        <button id="manualBtn">Check</button>
+      </div>
+
+      <div class="result" id="scanResult">
+        <div class="icon" id="resIcon"></div>
+        <div class="title" id="resTitle"></div>
+        <div class="detail" id="resDetail"></div>
+      </div>
+    </div>
+
+    <!-- BOOKINGS -->
+    <div class="panel" id="panelBookings">
+      <div class="stats" id="stats">
+        <div class="stat"><b id="stTotal">0</b><span>Bookings</span></div>
+        <div class="stat"><b id="stPaid">0</b><span>Paid</span></div>
+        <div class="stat"><b id="stIn">0</b><span>Checked-in</span></div>
+        <div class="stat"><b id="stRev">₹0</b><span>Revenue</span></div>
+      </div>
+      <div class="filters">
+        <input id="searchBox" type="text" placeholder="Naam ya phone se search karein">
+        <select id="dayFilter">
+          <option value="">All days</option>
+          <option value="2026-10-16">16 Oct</option>
+          <option value="2026-10-17">17 Oct</option>
+          <option value="2026-10-18">18 Oct</option>
+        </select>
+        <select id="statusFilter">
+          <option value="">All status</option>
+          <option value="paid">Paid</option>
+          <option value="pending">Pending</option>
+          <option value="failed">Failed</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Phone</th><th>Pass</th><th>Qty</th><th>Date</th><th>Amount</th><th>Status</th><th>Entry</th></tr>
+          </thead>
+          <tbody id="bookingsBody"></tbody>
+        </table>
+        <div class="loading" id="bookingsLoading">Loading bookings…</div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="panelSettings">
+      <div class="settings-group">
+        <label>Hero Background — Desktop</label>
+        <p class="settings-hint">Recommended ~1920x1080px, JPG or PNG. Website ke top banner mein yeh dikhega.</p>
+        <img class="settings-preview" id="previewDesktop" style="display:none;">
+        <input type="file" id="fileDesktop" accept="image/*">
+        <div class="settings-status" id="statusDesktop"></div>
+      </div>
+      <div class="settings-group">
+        <label>Hero Background — Mobile</label>
+        <p class="settings-hint">Recommended ~1080x1600px (portrait), JPG or PNG. Mobile par yeh dikhega.</p>
+        <img class="settings-preview" id="previewMobile" style="display:none;">
+        <input type="file" id="fileMobile" accept="image/*">
+        <div class="settings-status" id="statusMobile"></div>
+      </div>
+      <div class="settings-group">
+        <label>Logo</label>
+        <p class="settings-hint">Transparent background PNG best rahega.</p>
+        <img class="settings-preview settings-preview-logo" id="previewLogo" style="display:none;">
+        <input type="file" id="fileLogo" accept="image/png,image/webp">
+        <div class="settings-status" id="statusLogo"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ---- CONFIG ----
+  const SUPABASE_URL = "https://trhkmjqwkjvirqwabaxg.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_Y6OYlJ4aOUNP0W3aN09KkQ_bcMkthpY";
+  const LIST_FN = `${SUPABASE_URL}/functions/v1/admin-list`;
+  const CHECKIN_FN = `${SUPABASE_URL}/functions/v1/admin-checkin`;
+  // Admin login now uses real Supabase Auth (email + password). The Edge
+  // Functions verify the logged-in user's JWT and check they're an approved
+  // admin — see admin-list/admin-checkin function code for the ADMIN_EMAILS
+  // check. Nothing secret is stored in this file (anon/publishable key only).
+  // -----------------
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let currentSession = null;
+  let allBookings = [];
+
+  function fmtMoney(n){ return '₹' + Number(n).toLocaleString('en-IN'); }
+  function fmtDay(d){ if(!d) return '—'; const m = {'16':'16 Oct','17':'17 Oct','18':'18 Oct'}; return m[d.slice(-2)] || d; }
+
+  function authHeaders(){
+    return currentSession ? { 'Authorization': `Bearer ${currentSession.access_token}` } : {};
+  }
+
+  function showApp(){
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initScanner();
+    loadBookings();
+  }
+
+  function showGate(msg){
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('gate').style.display = 'flex';
+    if(msg) document.getElementById('gateErr').textContent = msg;
+  }
+
+  document.getElementById('unlockBtn').addEventListener('click', async () => {
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passInput').value;
+    if(!email || !password) return;
+    document.getElementById('unlockBtn').textContent = 'Checking…';
+    document.getElementById('gateErr').textContent = '';
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    document.getElementById('unlockBtn').textContent = 'Login';
+    if(error){
+      document.getElementById('gateErr').textContent = 'Login fail: ' + error.message;
+      return;
+    }
+    currentSession = data.session;
+    showApp();
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    currentSession = null;
+    showGate();
+  });
+
+  // keep currentSession in sync (handles token refresh automatically)
+  supabase.auth.onAuthStateChange((_event, session) => {
+    currentSession = session;
+  });
+
+  // auto-login if a Supabase session already exists (e.g. page refresh)
+  supabase.auth.getSession().then(({ data }) => {
+    if(data.session){
+      currentSession = data.session;
+      showApp();
+    }
+  });
+
+  // ---- Tabs ----
+  const tabScanBtn = document.getElementById('tabScanBtn');
+  const tabBookingsBtn = document.getElementById('tabBookingsBtn');
+  const tabSettingsBtn = document.getElementById('tabSettingsBtn');
+  tabScanBtn.addEventListener('click', () => switchTab('scan'));
+  tabBookingsBtn.addEventListener('click', () => switchTab('bookings'));
+  tabSettingsBtn.addEventListener('click', () => switchTab('settings'));
+  function switchTab(tab){
+    tabScanBtn.classList.toggle('active', tab === 'scan');
+    tabBookingsBtn.classList.toggle('active', tab === 'bookings');
+    tabSettingsBtn.classList.toggle('active', tab === 'settings');
+    document.getElementById('panelScan').classList.toggle('active', tab === 'scan');
+    document.getElementById('panelBookings').classList.toggle('active', tab === 'bookings');
+    document.getElementById('panelSettings').classList.toggle('active', tab === 'settings');
+    if(tab === 'bookings') loadBookings();
+    if(tab === 'settings') loadSettingsPreview();
+  }
+
+  // ---- Scanner ----
+  let scanner = null;
+  let lastScan = { text: '', at: 0 };
+  let scanBusy = false;
+
+  function initScanner(){
+    if(scanner) return;
+    scanner = new Html5Qrcode("qr-reader");
+    Html5Qrcode.getCameras().then(cams => {
+      const camId = (cams.find(c => /back|rear|environment/i.test(c.label)) || cams[cams.length - 1] || cams[0])?.id;
+      scanner.start(
+        camId ? camId : { facingMode: "environment" },
+        { fps: 12, qrbox: { width: 230, height: 230 }, aspectRatio: 1 },
+        onScan,
+        () => {}
+      ).catch(err => showResult('err', 'Camera error', String(err)));
+    }).catch(err => showResult('err', 'Camera not available', 'Manual ID se check-in karein.'));
+  }
+
+  function onScan(text){
+    const now = Date.now();
+    if(scanBusy) return;
+    if(text === lastScan.text && now - lastScan.at < 4000) return;
+    lastScan = { text, at: now };
+    checkIn(text.trim());
+  }
+
+  document.getElementById('manualBtn').addEventListener('click', () => {
+    const v = document.getElementById('manualId').value.trim();
+    if(v) checkIn(v);
+  });
+
+  async function checkIn(bookingId){
+    scanBusy = true;
+    try {
+      const res = await fetch(CHECKIN_FN, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ booking_id: bookingId })
+      });
+      const data = await res.json();
+      if(res.status === 401){ showResult('err', 'Session expired', 'Dobara login karein.'); showGate(); return; }
+      if(data.result === 'ok'){
+        const b = data.booking;
+        showResult('ok', '✓ Valid — Checked In', `${b.name} · ${b.pass_type.toUpperCase()} × ${b.quantity} · ${fmtDay(b.event_date)}`);
+      } else if(data.result === 'already_used'){
+        const b = data.booking;
+        showResult('warn', 'Already Scanned', `${b.name} · checked in at ${new Date(b.checked_in_at).toLocaleTimeString()}`);
+      } else if(data.result === 'unpaid'){
+        showResult('err', 'Payment Not Completed', 'Ye booking paid nahi hai.');
+      } else {
+        showResult('err', 'Invalid Ticket', 'Ye QR kisi booking se match nahi karta.');
+      }
+    } catch(e){
+      showResult('err', 'Network error', 'Dobara try karein.');
+    } finally {
+      setTimeout(() => { scanBusy = false; }, 1200);
+    }
+  }
+
+  function showResult(type, title, detail){
+    const el = document.getElementById('scanResult');
+    el.className = 'result show ' + type;
+    document.getElementById('resIcon').textContent = type === 'ok' ? '✅' : type === 'warn' ? '⚠️' : '❌';
+    document.getElementById('resTitle').textContent = title;
+    document.getElementById('resDetail').textContent = detail;
+  }
+
+  // ---- Bookings ----
+  async function loadBookings(){
+    const body = document.getElementById('bookingsBody');
+    const loading = document.getElementById('bookingsLoading');
+    loading.style.display = 'block';
+    try {
+      const res = await fetch(LIST_FN, { headers: { ...authHeaders() } });
+      if(res.status === 401){ showGate('Session expired — dobara login karein.'); return; }
+      allBookings = await res.json();
+      renderBookings();
+    } catch(e){
+      loading.textContent = 'Load nahi ho paaya.';
+    }
+  }
+
+  function renderBookings(){
+    const loading = document.getElementById('bookingsLoading');
+    const body = document.getElementById('bookingsBody');
+    const search = document.getElementById('searchBox').value.trim().toLowerCase();
+    const day = document.getElementById('dayFilter').value;
+    const status = document.getElementById('statusFilter').value;
+
+    const filtered = allBookings.filter(b => {
+      if(search && !(b.name?.toLowerCase().includes(search) || b.phone?.includes(search))) return false;
+      if(day && b.event_date !== day) return false;
+      if(status && b.status !== status) return false;
+      return true;
+    });
+
+    loading.style.display = filtered.length ? 'none' : 'block';
+    if(!filtered.length){ loading.textContent = 'Koi booking nahi mili.'; body.innerHTML = ''; return; }
+
+    body.innerHTML = filtered.map(b => `
+      <tr>
+        <td>${b.name}</td>
+        <td>${b.phone}</td>
+        <td>${b.pass_type}</td>
+        <td>${b.quantity}</td>
+        <td>${fmtDay(b.event_date)}</td>
+        <td>${fmtMoney(b.amount)}</td>
+        <td><span class="badge ${b.status}">${b.status}</span></td>
+        <td>${b.checked_in ? '<span class="badge in">Scanned</span>' : '—'}</td>
+      </tr>
+    `).join('');
+
+    const paid = allBookings.filter(b => b.status === 'paid');
+    document.getElementById('stTotal').textContent = allBookings.length;
+    document.getElementById('stPaid').textContent = paid.length;
+    document.getElementById('stIn').textContent = allBookings.filter(b => b.checked_in).length;
+    document.getElementById('stRev').textContent = fmtMoney(paid.reduce((s, b) => s + Number(b.amount), 0));
+  }
+
+  document.getElementById('searchBox').addEventListener('input', renderBookings);
+  document.getElementById('dayFilter').addEventListener('change', renderBookings);
+  document.getElementById('statusFilter').addEventListener('change', renderBookings);
+
+  // ---- Settings: hero background (desktop/mobile) + logo ----
+  const ASSET_FIELDS = {
+    desktop: { column: 'hero_bg_desktop_url', input: 'fileDesktop', preview: 'previewDesktop', status: 'statusDesktop', path: 'hero-desktop' },
+    mobile: { column: 'hero_bg_mobile_url', input: 'fileMobile', preview: 'previewMobile', status: 'statusMobile', path: 'hero-mobile' },
+    logo: { column: 'logo_url', input: 'fileLogo', preview: 'previewLogo', status: 'statusLogo', path: 'logo' },
+  };
+
+  async function loadSettingsPreview(){
+    const { data, error } = await supabase.from('site_config').select('*').eq('id', 1).maybeSingle();
+    if(error || !data) return;
+    Object.values(ASSET_FIELDS).forEach(f => {
+      const url = data[f.column];
+      if(url){
+        const img = document.getElementById(f.preview);
+        img.src = url;
+        img.style.display = 'block';
+      }
+    });
+  }
+
+  async function uploadAsset(key, file){
+    const f = ASSET_FIELDS[key];
+    const statusEl = document.getElementById(f.status);
+    statusEl.className = 'settings-status';
+    statusEl.textContent = 'Uploading…';
+
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const path = `${f.path}.${ext}`;
+
+    const { error: uploadErr } = await supabase.storage
+      .from('site-assets')
+      .upload(path, file, { upsert: true, cacheControl: '3600' });
+
+    if(uploadErr){
+      statusEl.className = 'settings-status err';
+      statusEl.textContent = 'Upload fail: ' + uploadErr.message;
+      return;
+    }
+
+    const { data: pub } = supabase.storage.from('site-assets').getPublicUrl(path);
+    const publicUrl = pub.publicUrl + '?v=' + Date.now(); // cache-bust so the site picks up the new image
+
+    const { error: updateErr } = await supabase
+      .from('site_config')
+      .upsert({ id: 1, [f.column]: publicUrl, updated_at: new Date().toISOString() });
+
+    if(updateErr){
+      statusEl.className = 'settings-status err';
+      statusEl.textContent = 'Save fail: ' + updateErr.message;
+      return;
+    }
+
+    statusEl.className = 'settings-status ok';
+    statusEl.textContent = 'Saved ✓';
+    const img = document.getElementById(f.preview);
+    img.src = publicUrl;
+    img.style.display = 'block';
+  }
+
+  Object.entries(ASSET_FIELDS).forEach(([key, f]) => {
+    document.getElementById(f.input).addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if(file) uploadAsset(key, file);
+    });
+  });
+</script>
+</body>
+</html>
