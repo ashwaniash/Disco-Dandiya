@@ -259,31 +259,6 @@
     box-shadow: inset 0 0 0 1.5px var(--gold);
   }
 
-  .google-btn{
-    width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
-    background: var(--night-2); color:var(--cream); border:1px solid var(--card-line);
-    box-shadow: var(--shadow-sm);
-    padding:14px; border-radius: var(--r-sm); font-family:'Work Sans', sans-serif;
-    font-weight:600; font-size:0.92rem; cursor:pointer; margin-bottom:10px;
-    transition: transform .12s ease;
-  }
-  .google-btn:active{ transform: scale(0.98); }
-  .google-btn svg{ width:18px; height:18px; }
-  .or-divider{
-    display:flex; align-items:center; gap:12px; margin:16px 0;
-    color: var(--muted-2); font-size:0.74rem;
-  }
-  .or-divider::before, .or-divider::after{ content:''; flex:1; height:1px; background:var(--card-line); }
-  .signed-in-badge{
-    display:flex; align-items:center; justify-content:space-between; gap:10px;
-    background:rgba(63,107,63,0.13); border:1px solid rgba(63,107,63,0.35);
-    border-radius: var(--r-sm); padding:12px 14px; margin-bottom:14px; font-size:0.82rem;
-  }
-  .signed-in-badge button{
-    background:transparent; border:none; color:var(--gold); font-size:0.76rem;
-    font-weight:600; cursor:pointer; padding:0; white-space:nowrap;
-  }
-
   /* ---------- Floating pay bar ---------- */
   .paybar{
     position:fixed; left:0; right:0; bottom:0;
@@ -369,6 +344,12 @@
   }
   .rzp-btn:active{ transform: scale(0.98); }
   .rzp-btn:disabled{ opacity:0.45; cursor:not-allowed; box-shadow:none; }
+  .secure-badge{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    margin-top:12px; font-size:0.76rem; font-weight:600;
+    color: var(--teal);
+  }
+  .secure-badge svg{ width:15px; height:15px; flex-shrink:0; }
 
   /* ---------- Success sheet ---------- */
   .success-sheet{ text-align:center; padding-top: 18px; }
@@ -398,6 +379,13 @@
   }
   .success-summary div:last-child{ border-bottom:none; }
   .success-summary span{ color: var(--muted-2); }
+  .screenshot-note{
+    display:flex; align-items:flex-start; gap:8px; text-align:left;
+    background: rgba(184,134,46,0.10); border:1px solid rgba(184,134,46,0.28);
+    border-radius: var(--r-sm); padding:11px 13px; margin-bottom:16px;
+    font-size:0.78rem; color: var(--cream); line-height:1.4;
+  }
+  .screenshot-note svg{ width:17px; height:17px; flex-shrink:0; margin-top:1px; color: var(--gold); }
   .done-btn{
     width:100%; background: var(--gold); color: var(--night-2); border:none;
     padding:15px; border-radius: 999px; font-family:'Work Sans', sans-serif;
@@ -528,17 +516,6 @@
         <b id="sheetOrderAmt">₹0</b>
       </div>
 
-      <div id="signedInBadge" class="signed-in-badge" style="display:none;">
-        <span id="signedInEmail"></span>
-        <button type="button" id="signOutBtn">Not you? Sign out</button>
-      </div>
-
-      <button type="button" id="googleBtn" class="google-btn">
-        <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.7 18.9 12 24 12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4c-7.6 0-14.1 4.3-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.4C29.7 35.4 27 36 24 36c-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.9 39.6 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.6 5.4C41.9 35.8 44 30.3 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
-        Continue with Google
-      </button>
-      <div class="or-divider">or continue as a guest</div>
-
       <div class="field">
         <label for="name">Full name</label>
         <input id="name" type="text" placeholder="Enter your name" autocomplete="name">
@@ -554,7 +531,11 @@
 
       <div id="status" class="status"></div>
 
-      <button id="payBtn" class="rzp-btn">Pay via Razorpay</button>
+      <button id="payBtn" class="rzp-btn">Pay via Cashfree</button>
+      <div class="secure-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg>
+        100% Secured Payment
+      </div>
     </div>
   </div>
 
@@ -574,6 +555,10 @@
         <div><span>Amount paid</span><b id="sumAmt">—</b></div>
         <div><span>Ticket ID</span><b id="sumId" style="font-size:0.72rem;">—</b></div>
       </div>
+      <div class="screenshot-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.5"/><path d="M8 5l1.5-2h5L16 5"/></svg>
+        Take a screenshot of this ticket before downloading, just in case.
+      </div>
       <button class="done-btn" id="downloadBtn" style="margin-bottom:10px;">Download Ticket</button>
       <button class="done-btn" id="doneBtn">Done</button>
     </div>
@@ -584,7 +569,7 @@
       <img id="footerLogo" src="" alt="">
     </div>
     <div class="footer-copy">All rights reserved by S2 Events</div>
-    <div class="footer-meta">Payments secured via Razorpay · Bookings stored in Supabase</div>
+    <div class="footer-meta">Payments secured via Cashfree · Bookings stored in Supabase</div>
     <div class="footer-credit">Design by <a href="https://ominibase.online/" target="_blank" rel="noopener">Ominibase</a></div>
   </footer>
 
@@ -611,17 +596,10 @@
   })();
 
   let selected = null; // { type, unitPrice, per, label }
-  const payBtnLabel = BYPASS_PAYMENT ? 'Book Now (Test Mode — No Payment)' : 'Pay via Razorpay';
+  const payBtnLabel = 'Pay via Cashfree';
   document.getElementById('payBtn').textContent = payBtnLabel;
   let qty = 1;
   let selectedDay = document.querySelector('.day-btn.selected').dataset.day;
-  let currentUser = null; // set if signed in with Google
-
-  const PENDING_KEY = 'dandiya_pending_selection';
-  const googleBtn = document.getElementById('googleBtn');
-  const signedInBadge = document.getElementById('signedInBadge');
-  const signedInEmail = document.getElementById('signedInEmail');
-  const signOutBtn = document.getElementById('signOutBtn');
 
   // ---- Shared icon library (must stay in sync with the same list in admin.html) ----
   const FEATURE_ICONS = {
@@ -677,7 +655,7 @@
       return '<div class="feature ' + accent + (f.wide ? ' wide' : '') + '">' + icon + text + '</div>';
     }).join('');
   }
-  renderFeatures(DEFAULT_FEATURES); // instant paint, config aane par refresh ho jayega
+  renderFeatures(DEFAULT_FEATURES); // paint immediately, refreshed once the config loads
 
   // ---- Hero background + logo, set from admin-uploaded images ----
   async function loadSiteConfig(){
@@ -725,67 +703,6 @@
     siteConfigResizeTimer = setTimeout(loadSiteConfig, 300);
   });
 
-  function applyUserToForm(user){
-    currentUser = user;
-    if(!user) return;
-    signedInBadge.style.display = 'flex';
-    signedInEmail.textContent = 'Signed in as ' + (user.email || 'Google account');
-    googleBtn.style.display = 'none';
-    document.querySelector('.or-divider').style.display = 'none';
-    const meta = user.user_metadata || {};
-    const nameEl = document.getElementById('name');
-    const emailEl = document.getElementById('email');
-    if(!nameEl.value) nameEl.value = meta.full_name || meta.name || '';
-    if(!emailEl.value) emailEl.value = user.email || '';
-  }
-
-  googleBtn.addEventListener('click', async () => {
-    if(!sb){
-      showStatus('Booking service is not configured yet.', false);
-      return;
-    }
-    // Save current selection so we can restore it after the OAuth redirect
-    if(selected){
-      sessionStorage.setItem(PENDING_KEY, JSON.stringify({ type: selected.type, qty, day: selectedDay }));
-    }
-    await sb.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.href }
-    });
-  });
-
-  signOutBtn.addEventListener('click', async () => {
-    if(sb) await sb.auth.signOut();
-    currentUser = null;
-    signedInBadge.style.display = 'none';
-    googleBtn.style.display = 'flex';
-    document.querySelector('.or-divider').style.display = 'flex';
-  });
-
-  // On load: pick up an existing Google session, and restore the pass
-  // selection that was in progress before the OAuth redirect (if any).
-  if(sb){
-    sb.auth.getSession().then(({ data }) => {
-      if(!data.session) return;
-      applyUserToForm(data.session.user);
-      const pendingRaw = sessionStorage.getItem(PENDING_KEY);
-      if(pendingRaw){
-        sessionStorage.removeItem(PENDING_KEY);
-        try {
-          const pending = JSON.parse(pendingRaw);
-          const el = document.querySelector(`.pass[data-type="${pending.type}"]`);
-          const dayBtn = document.querySelector(`.day-btn[data-day="${pending.day}"]`);
-          if(el){
-            el.querySelector('.n').textContent = pending.qty;
-            el.click(); // selects pass, sets `selected` and `qty`, refreshes totals
-          }
-          if(dayBtn) dayBtn.click();
-          if(selected) continueBtn.click(); // reopen details sheet
-        } catch(e){ /* ignore malformed pending selection */ }
-      }
-    });
-  }
-
   document.querySelectorAll('.day-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('selected'));
@@ -806,6 +723,15 @@
   function showStatus(msg, ok){
     statusEl.textContent = msg;
     statusEl.className = 'status show ' + (ok ? 'ok' : 'err');
+  }
+
+  // 4-character ticket ID: uppercase letters + digits, skipping the
+  // easily-confused O/0 and I/1 so it's easy to read back on a check-in desk.
+  function genTicketId(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let s = '';
+    for(let i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    return s;
   }
 
   function refreshTotals(){
@@ -907,15 +833,16 @@
     const amount = selected.unitPrice * qty; // in rupees
 
     try {
-      // 1. Create the booking row. We generate the id ourselves and insert
-      //    without reading it back, so this only needs an INSERT policy —
-      //    no RLS SELECT policy required (safer, and avoids the 401/403
-      //    "insert worked but read-back was blocked" failure mode).
-      const bookingId = (crypto.randomUUID && crypto.randomUUID()) ||
-        `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-      const { error: insertErr } = await sb
-        .from('bookings')
-        .insert({
+      // 1. Create the booking row with a short, human-friendly ticket ID
+      //    (4 characters, letters + numbers). We insert without reading it
+      //    back, so this only needs an INSERT policy — no RLS SELECT policy
+      //    required (safer, and avoids the 401/403 "insert worked but
+      //    read-back was blocked" failure mode). On the rare chance of a
+      //    collision (unique constraint violation), we retry with a new code.
+      let bookingId, insertErr;
+      for(let attempt = 0; attempt < 8; attempt++){
+        bookingId = genTicketId();
+        const res = await sb.from('bookings').insert({
           id: bookingId,
           name, phone, email: email || null,
           pass_type: selected.type,
@@ -924,6 +851,10 @@
           amount: amount,
           status: BYPASS_PAYMENT ? 'paid' : 'pending'
         });
+        insertErr = res.error;
+        if(!insertErr) break;
+        if(insertErr.code !== '23505') break; // not a duplicate-ID error — don't retry
+      }
       if(insertErr) throw insertErr;
       const booking = { id: bookingId };
 
