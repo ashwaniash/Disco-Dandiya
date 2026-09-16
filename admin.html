@@ -161,6 +161,26 @@
   .settings-status.ok{ color:var(--teal); }
   .settings-status.err{ color:var(--rani); }
 
+  /* Gallery (previous year glimpses) */
+  .gallery-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:10px; }
+  .gallery-slot{
+    background:var(--night-2); border:1px solid var(--line); border-radius:10px;
+    padding:8px; display:flex; flex-direction:column; align-items:center; gap:6px;
+  }
+  .gallery-slot img{
+    width:100%; height:100px; object-fit:cover; border-radius:8px; border:1px solid var(--line);
+  }
+  .gallery-slot .gallery-empty{
+    width:100%; height:100px; border-radius:8px; border:1px dashed var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.7rem; color:rgba(44,18,10,0.4);
+  }
+  .gallery-slot input[type="file"]{ width:100%; font-size:0.62rem; }
+  .gallery-slot .clearicon{
+    background:none; border:none; padding:0; color:var(--rani); font-size:0.68rem;
+    cursor:pointer; text-decoration:underline; font-family:'Work Sans',sans-serif;
+  }
+
   /* Features editor */
   .feat-row{
     display:grid;
@@ -326,6 +346,12 @@
           <button type="button" id="featResetBtn">Reset to default</button>
         </div>
         <div class="settings-status" id="statusFeatures"></div>
+      </div>
+      <div class="settings-group">
+        <label>Previous Year Glimpses</label>
+        <p class="settings-hint">Upload up to 5 photos from previous events — they auto-scroll in the "Previous Year Glimpses" section on the website, right below "Choose your pass". JPG/PNG, keep each under 2MB.</p>
+        <div class="gallery-grid" id="galleryGrid"></div>
+        <div class="settings-status" id="statusGallery"></div>
       </div>
       <div class="settings-group">
         <label>Top Logo (small badge above main logo)</label>
@@ -938,12 +964,92 @@
     logo: { column: 'logo_url', input: 'fileLogo', preview: 'previewLogo', status: 'statusLogo', path: 'logo' },
   };
 
+  // ---- Settings: previous year glimpses gallery (up to 5 photos) ----
+  const GALLERY_MAX = 5;
+  let galleryUrls = new Array(GALLERY_MAX).fill(null);
+
+  function renderGallery(){
+    const grid = document.getElementById('galleryGrid');
+    grid.innerHTML = galleryUrls.map((url, i) => `
+      <div class="gallery-slot">
+        ${url ? `<img src="${url}" alt="">` : `<div class="gallery-empty">Photo ${i + 1}</div>`}
+        <input type="file" accept="image/*" data-gallery-idx="${i}">
+        ${url ? `<button type="button" class="clearicon" data-gallery-clear="${i}">Remove</button>` : ''}
+      </div>
+    `).join('');
+    grid.querySelectorAll('[data-gallery-idx]').forEach(inp => {
+      inp.addEventListener('change', (e) => {
+        const idx = Number(inp.dataset.galleryIdx);
+        const file = e.target.files[0];
+        if(file) uploadGalleryPhoto(idx, file);
+      });
+    });
+    grid.querySelectorAll('[data-gallery-clear]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        galleryUrls[Number(btn.dataset.galleryClear)] = null;
+        saveGallery();
+        renderGallery();
+      });
+    });
+  }
+
+  async function saveGallery(){
+    const statusEl = document.getElementById('statusGallery');
+    statusEl.className = 'settings-status';
+    statusEl.textContent = 'Saving…';
+    const clean = galleryUrls.filter(Boolean);
+    const { error } = await sb.from('site_config')
+      .upsert({ id: 1, gallery_images: clean, updated_at: new Date().toISOString() });
+    if(error){
+      statusEl.className = 'settings-status err';
+      statusEl.textContent = 'Save fail: ' + error.message;
+      return;
+    }
+    statusEl.className = 'settings-status ok';
+    statusEl.textContent = 'Saved ✓';
+  }
+
+  async function uploadGalleryPhoto(idx, file){
+    const statusEl = document.getElementById('statusGallery');
+    if(file.size > 2 * 1024 * 1024){
+      statusEl.className = 'settings-status err';
+      statusEl.textContent = 'Please keep each photo under 2MB.';
+      return;
+    }
+    statusEl.className = 'settings-status';
+    statusEl.textContent = 'Uploading…';
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const path = `gallery/photo-${idx + 1}-${Date.now()}.${ext}`;
+
+    const { error: upErr } = await sb.storage
+      .from('site-assets')
+      .upload(path, file, { upsert: true, cacheControl: '3600' });
+    if(upErr){
+      statusEl.className = 'settings-status err';
+      statusEl.textContent = 'Upload fail: ' + upErr.message;
+      return;
+    }
+    const { data: pub } = sb.storage.from('site-assets').getPublicUrl(path);
+    galleryUrls[idx] = pub.publicUrl + '?v=' + Date.now();
+    await saveGallery();
+    renderGallery();
+  }
+
   async function loadSettingsPreview(){
     const { data, error } = await sb.from('site_config').select('*').eq('id', 1).maybeSingle();
     if(error || !data){
       if(!featureDraft.length){ featureDraft = DEFAULT_FEATURES.map(f => ({ ...f })); renderFeatureEditor(); }
+      renderGallery();
       return;
     }
+
+    let gallery = data.gallery_images;
+    if(typeof gallery === 'string'){ try { gallery = JSON.parse(gallery); } catch(e){ gallery = null; } }
+    galleryUrls = new Array(GALLERY_MAX).fill(null);
+    if(Array.isArray(gallery)){
+      gallery.slice(0, GALLERY_MAX).forEach((url, i) => { galleryUrls[i] = url || null; });
+    }
+    renderGallery();
 
     let feats = data.features;
     if(typeof feats === 'string'){ try { feats = JSON.parse(feats); } catch(e){ feats = null; } }
