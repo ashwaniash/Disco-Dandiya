@@ -153,7 +153,7 @@
     border:1px solid var(--line); margin-bottom:10px; background:var(--night-2);
   }
   .settings-preview-logo{
-    max-height:90px; width:auto; padding:8px;
+    width:220px; height:84px; object-fit:contain; padding:8px;
     background:repeating-conic-gradient(#e4e4e4 0% 25%, #fff 0% 50%) 0 0 / 16px 16px;
   }
   .settings-group input[type="file"]{ font-size:0.82rem; font-family:'Work Sans',sans-serif; }
@@ -212,7 +212,7 @@
 
   <div class="gate" id="gate">
     <div class="display">Admin Access</div>
-    <p>Apne admin email aur password se login karein.</p>
+    <p>Log in with your admin email and password.</p>
     <input id="emailInput" type="email" placeholder="you@example.com" autocomplete="username">
     <br>
     <input id="passInput" type="password" placeholder="Password" autocomplete="current-password">
@@ -252,7 +252,7 @@
         </div>
       </div>
 
-      <p class="scan-hint">Camera ko QR ke saamne le jaayein — auto-detect ho jaayega.</p>
+      <p class="scan-hint">Point the camera at the QR code — it will detect automatically.</p>
 
       <div class="scan-controls">
         <select id="cameraSelect" style="display:none;"></select>
@@ -261,7 +261,7 @@
       </div>
 
       <div class="manual">
-        <input id="manualId" type="text" placeholder="Ya ticket ID paste karein">
+        <input id="manualId" type="text" placeholder="Or paste ticket ID">
         <button id="manualBtn">Check</button>
       </div>
     </div>
@@ -275,7 +275,7 @@
         <div class="stat"><b id="stRev">₹0</b><span>Revenue</span></div>
       </div>
       <div class="filters">
-        <input id="searchBox" type="text" placeholder="Naam ya phone se search karein">
+        <input id="searchBox" type="text" placeholder="Search by name or phone">
         <select id="dayFilter">
           <option value="">All days</option>
           <option value="2026-10-16">16 Oct</option>
@@ -304,21 +304,21 @@
     <div class="panel" id="panelSettings">
       <div class="settings-group">
         <label>Hero Background — Desktop</label>
-        <p class="settings-hint">Recommended ~1920x1080px, JPG or PNG. Website ke top banner mein yeh dikhega.</p>
+        <p class="settings-hint">Recommended ~1920x1080px, JPG or PNG. This appears in the top banner of the website.</p>
         <img class="settings-preview" id="previewDesktop" style="display:none;">
         <input type="file" id="fileDesktop" accept="image/*">
         <div class="settings-status" id="statusDesktop"></div>
       </div>
       <div class="settings-group">
         <label>Hero Background — Mobile</label>
-        <p class="settings-hint">Recommended ~1080x1600px (portrait), JPG or PNG. Mobile par yeh dikhega.</p>
+        <p class="settings-hint">Recommended ~1080x1600px (portrait), JPG or PNG. This appears on mobile devices.</p>
         <img class="settings-preview" id="previewMobile" style="display:none;">
         <input type="file" id="fileMobile" accept="image/*">
         <div class="settings-status" id="statusMobile"></div>
       </div>
       <div class="settings-group">
         <label>Highlights / Features</label>
-        <p class="settings-hint">Website ke "Event Highlights" section ke cards. Built-in icon list se chunein <b>ya</b> apna icon upload karein (PNG/SVG, square, transparent background, ~128x128px best). Row ko ↑ ↓ se upar-neeche karein; "Full width" tick karne par card puri chaudai le lega.</p>
+        <p class="settings-hint">These are the cards in the website's "Event Highlights" section. Choose from the built-in icon list <b>or</b> upload your own icon (PNG/SVG, square, transparent background, ~128x128px recommended). Use ↑ ↓ to reorder a row; ticking "Full width" makes that card span the full row.</p>
         <div id="featureList"></div>
         <div class="feat-actions">
           <button type="button" id="featAddBtn">+ Add feature</button>
@@ -329,7 +329,7 @@
       </div>
       <div class="settings-group">
         <label>Logo</label>
-        <p class="settings-hint">Transparent background PNG best rahega.</p>
+        <p class="settings-hint">PNG with a transparent background. The logo displays in a fixed 220×84px area on the site, so nothing else shifts — upload a wide/landscape image (roughly 3:1 to 4:1) for the best fit; it will be scaled down to fit within that space without cropping.</p>
         <img class="settings-preview settings-preview-logo" id="previewLogo" style="display:none;">
         <input type="file" id="fileLogo" accept="image/png,image/webp">
         <div class="settings-status" id="statusLogo"></div>
@@ -464,7 +464,7 @@
   async function initScanner(preferredCamId){
     if(scanner || scannerStarting) return;
     if(typeof Html5Qrcode === 'undefined'){
-      showResult('err', 'Scanner library load nahi hui', 'Internet slow ho sakta hai — page reload karke dobara try karein.');
+      showResult('err', 'Scanner library failed to load', 'Your connection may be slow — reload the page and try again.');
       return;
     }
     scannerStarting = true;
@@ -519,13 +519,13 @@
       const msg = String(err && err.message || err || '');
       let detail;
       if(/NotAllowedError|Permission denied/i.test(msg)){
-        detail = 'Camera permission block hai. Browser settings me is site ke liye Camera "Allow" karein, phir "Retry camera" dabayein.';
+        detail = 'Camera permission is blocked. Allow camera access for this site in your browser settings, then tap "Retry camera".';
       } else if(/NO_CAMERAS_FOUND|NotFoundError/i.test(msg)){
-        detail = 'Is device me koi camera nahi mila. Doosre device se try karein, ya Manual ID se check-in karein.';
+        detail = 'No camera was found on this device. Try another device, or check in using the Manual ID field.';
       } else if(/NotReadableError|TrackStartError/i.test(msg)){
-        detail = 'Camera kisi aur app/tab me busy hai. Usse band karke "Retry camera" dabayein.';
+        detail = 'The camera is in use by another app or tab. Close it, then tap "Retry camera".';
       } else {
-        detail = 'Permission allow karke "Retry camera" dabayein, ya Manual ID se check-in karein.';
+        detail = 'Allow camera permission and tap "Retry camera", or check in using the Manual ID field.';
       }
       showResult('err', 'Camera not available', detail);
     }
@@ -653,7 +653,7 @@
         body: JSON.stringify({ booking_id: bookingId })
       });
       const data = await res.json();
-      if(res.status === 401){ showResult('err', 'Session expired', 'Dobara login karein.', 0); showGate(); return; }
+      if(res.status === 401){ showResult('err', 'Session expired', 'Please log in again.', 0); showGate(); return; }
       if(data.result === 'ok'){
         const b = data.booking;
         showResult('ok', '✓ Valid — Checked In', `${b.name} · ${b.pass_type.toUpperCase()} × ${b.quantity} · ${fmtDay(b.event_date)}`);
@@ -661,12 +661,12 @@
         const b = data.booking;
         showResult('warn', 'Already Scanned', `${b.name} · checked in at ${new Date(b.checked_in_at).toLocaleTimeString()}`);
       } else if(data.result === 'unpaid'){
-        showResult('err', 'Payment Not Completed', 'Ye booking paid nahi hai.');
+        showResult('err', 'Payment Not Completed', 'This booking has not been paid.');
       } else {
-        showResult('err', 'Invalid Ticket', 'Ye QR kisi booking se match nahi karta.');
+        showResult('err', 'Invalid Ticket', 'This QR code does not match any booking.');
       }
     } catch(e){
-      showResult('err', 'Network error', 'Dobara try karein.');
+      showResult('err', 'Network error', 'Please try again.');
     }
   }
 
@@ -677,11 +677,11 @@
     loading.style.display = 'block';
     try {
       const res = await fetch(LIST_FN, { headers: { ...authHeaders() } });
-      if(res.status === 401){ showGate('Session expired — dobara login karein.'); return; }
+      if(res.status === 401){ showGate('Session expired — please log in again.'); return; }
       allBookings = await res.json();
       renderBookings();
     } catch(e){
-      loading.textContent = 'Load nahi ho paaya.';
+      loading.textContent = 'Failed to load.';
     }
   }
 
@@ -700,7 +700,7 @@
     });
 
     loading.style.display = filtered.length ? 'none' : 'block';
-    if(!filtered.length){ loading.textContent = 'Koi booking nahi mili.'; body.innerHTML = ''; return; }
+    if(!filtered.length){ loading.textContent = 'No bookings found.'; body.innerHTML = ''; return; }
 
     body.innerHTML = filtered.map(b => `
       <tr>
@@ -726,7 +726,7 @@
   document.getElementById('dayFilter').addEventListener('change', renderBookings);
   document.getElementById('statusFilter').addEventListener('change', renderBookings);
 
-  // ---- Shared icon library (admin aur website dono me same list honi chahiye) ----
+  // ---- Shared icon library (must stay in sync with the same list in index.html) ----
   const FEATURE_ICONS = {
     headphones: '<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="2" y="15" width="5" height="6" rx="1.5"/><rect x="17" y="15" width="5" height="6" rx="1.5"/>',
     food:       '<path d="M7 2v6a2 2 0 0 0 2 2v12"/><path d="M7 2v6a2 2 0 0 1-2 2v12"/><path d="M17 2c-1.5 2-2 4-2 7 0 2 1 3 2 3v10"/>',
@@ -752,11 +752,11 @@
   const FEATURE_ACCENTS = { gold:'acc-gold', rani:'acc-rani', teal:'acc-teal' };
 
   const DEFAULT_FEATURES = [
-    { icon:'headphones', accent:'gold', title:'Celebrity DJ',            sub:'Har raat live set, non-stop garba beats',  wide:false },
-    { icon:'food',       accent:'rani', title:'Food & Live Stalls',      sub:'Chaat, live counters aur desserts',        wide:false },
-    { icon:'speaker',    accent:'teal', title:'Best Sound System',       sub:'Line-array setup, pure ground me clear',   wide:false },
-    { icon:'shield',     accent:'gold', title:'Bihar Police Security',   sub:'Guards + CCTV, ladies ke liye safe',       wide:false },
-    { icon:'heart',      accent:'rani', title:'Family & Couple Friendly',sub:'Clean maahaul — bachchon se buzurgon tak sabke liye', wide:true },
+    { icon:'headphones', accent:'gold', title:'Celebrity DJ',            sub:'Live sets every night, non-stop garba beats',  wide:false },
+    { icon:'food',       accent:'rani', title:'Food & Live Stalls',      sub:'Chaat, live counters and desserts',        wide:false },
+    { icon:'speaker',    accent:'teal', title:'Best Sound System',       sub:'Line-array setup, crystal-clear across the ground',   wide:false },
+    { icon:'shield',     accent:'gold', title:'Bihar Police Security',   sub:'Guards and CCTV, safe for everyone',       wide:false },
+    { icon:'heart',      accent:'rani', title:'Family & Couple Friendly',sub:'A clean environment welcoming to all ages', wide:true },
   ];
 
   function featureIconSvg(name){
@@ -805,7 +805,7 @@
         <select data-k="accent">${accOpts}</select>
         <div class="feat-texts">
           <input type="text" data-k="title" placeholder="Heading, e.g. Celebrity DJ" value="${(f.title||'').replace(/"/g,'&quot;')}">
-          <input type="text" data-k="sub" placeholder="Chhoti detail (optional)" value="${(f.sub||'').replace(/"/g,'&quot;')}">
+          <input type="text" data-k="sub" placeholder="Short detail (optional)" value="${(f.sub||'').replace(/"/g,'&quot;')}">
           <label class="feat-wide"><input type="checkbox" data-k="wide" ${f.wide?'checked':''}> Full width card</label>
         </div>
         <div class="feat-tools">
@@ -856,7 +856,7 @@
 
   async function uploadFeatureIcon(index, file, statusEl){
     if(file.size > 512 * 1024){
-      statusEl.textContent = 'File 500KB se chhoti rakhein';
+      statusEl.textContent = 'Please keep the file under 500KB';
       return;
     }
     statusEl.textContent = 'Uploading…';
@@ -896,7 +896,7 @@
       }));
     if(!clean.length){
       el.className = 'settings-status err';
-      el.textContent = 'Kam se kam ek feature ka heading bharna zaroori hai.';
+      el.textContent = 'At least one feature needs a heading before saving.';
       return;
     }
     el.className = 'settings-status';
