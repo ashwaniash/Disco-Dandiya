@@ -328,8 +328,15 @@
         <div class="settings-status" id="statusFeatures"></div>
       </div>
       <div class="settings-group">
+        <label>Top Logo (small badge above main logo)</label>
+        <p class="settings-hint">PNG with a transparent background. This is a small badge that appears above your main logo. It displays in a fixed 110×44px area, so keep it simple — a short mark, year, or edition badge works best.</p>
+        <img class="settings-preview settings-preview-logo" id="previewTopLogo" style="display:none; width:110px; height:44px;">
+        <input type="file" id="fileTopLogo" accept="image/png,image/webp">
+        <div class="settings-status" id="statusTopLogo"></div>
+      </div>
+      <div class="settings-group">
         <label>Logo</label>
-        <p class="settings-hint">PNG with a transparent background. The logo displays in a fixed 220×84px area on the site, so nothing else shifts — upload a wide/landscape image (roughly 3:1 to 4:1) for the best fit; it will be scaled down to fit within that space without cropping.</p>
+        <p class="settings-hint">A transparent background PNG works best.</p>
         <img class="settings-preview settings-preview-logo" id="previewLogo" style="display:none;">
         <input type="file" id="fileLogo" accept="image/png,image/webp">
         <div class="settings-status" id="statusLogo"></div>
@@ -927,6 +934,7 @@
   const ASSET_FIELDS = {
     desktop: { column: 'hero_bg_desktop_url', input: 'fileDesktop', preview: 'previewDesktop', status: 'statusDesktop', path: 'hero-desktop' },
     mobile: { column: 'hero_bg_mobile_url', input: 'fileMobile', preview: 'previewMobile', status: 'statusMobile', path: 'hero-mobile' },
+    topLogo: { column: 'top_logo_url', input: 'fileTopLogo', preview: 'previewTopLogo', status: 'statusTopLogo', path: 'top-logo' },
     logo: { column: 'logo_url', input: 'fileLogo', preview: 'previewLogo', status: 'statusLogo', path: 'logo' },
   };
 
