@@ -421,6 +421,7 @@
         <div><span>Amount paid</span><b id="sumAmt">—</b></div>
         <div><span>Ticket ID</span><b id="sumId" style="font-size:0.72rem;">—</b></div>
       </div>
+      <button class="done-btn" id="downloadBtn" style="margin-bottom:10px;">Download Ticket</button>
       <button class="done-btn" id="doneBtn">Done</button>
     </div>
   </div>
@@ -432,6 +433,9 @@
   const SUPABASE_URL = "https://trhkmjqwkjvirqwabaxg.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_Y6OYlJ4aOUNP0W3aN09KkQ_bcMkthpY";
   const RAZORPAY_KEY_ID = "YOUR_RAZORPAY_KEY_ID"; // public key, safe on client — fill this in separately
+  // TEMPORARY: skip Razorpay entirely and auto-confirm bookings as paid.
+  // Set this back to false once real payments are ready to go live.
+  const BYPASS_PAYMENT = true;
   // Edge Function endpoints (deployed from supabase-functions/ folder)
   const CREATE_ORDER_FN = `${SUPABASE_URL}/functions/v1/create-order`;
   const VERIFY_PAYMENT_FN = `${SUPABASE_URL}/functions/v1/verify-payment`;
@@ -447,6 +451,8 @@
   })();
 
   let selected = null; // { type, unitPrice, per, label }
+  const payBtnLabel = BYPASS_PAYMENT ? 'Book Now (Test Mode — No Payment)' : 'Pay via Razorpay';
+  document.getElementById('payBtn').textContent = payBtnLabel;
   let qty = 1;
   let selectedDay = document.querySelector('.day-btn.selected').dataset.day;
   let currentUser = null; // set if signed in with Google
@@ -633,6 +639,8 @@
     location.reload();
   });
 
+  let lastBooking = null; // kept around so the Download Ticket button can rebuild the ticket
+
   payBtn.addEventListener('click', async () => {
     const name = document.getElementById('name').value.trim();
     const phone = document.getElementById('phone').value.trim();
@@ -653,7 +661,9 @@
     const amount = selected.unitPrice * qty; // in rupees
 
     try {
-      // 1. Create a pending booking row
+      // 1. Create the booking row. In bypass mode it's inserted as already
+      //    paid; in normal mode it starts pending and is upgraded to paid
+      //    once Razorpay verification succeeds below.
       const { data: booking, error: insertErr } = await sb
         .from('bookings')
         .insert({
@@ -662,11 +672,19 @@
           event_date: selectedDay,
           quantity: qty,
           amount: amount,
-          status: 'pending'
+          status: BYPASS_PAYMENT ? 'paid' : 'pending'
         })
         .select()
         .single();
       if(insertErr) throw insertErr;
+
+      if(BYPASS_PAYMENT){
+        // Skip Razorpay entirely — go straight to the confirmation screen.
+        showBookingConfirmed(booking, amount, name);
+        payBtn.disabled = false;
+        payBtn.textContent = payBtnLabel;
+        return;
+      }
 
       // 2. Ask edge function to create a Razorpay order (keeps secret key server-side)
       const orderRes = await fetch(CREATE_ORDER_FN, {
@@ -700,30 +718,17 @@
             })
           });
           if(verifyRes.ok){
-            // swap sheets: hide details, show confirmation
-            detailsOverlay.classList.remove('show');
-            document.getElementById('sumPass').textContent = `${qty} × ${selected.label}`;
-            document.getElementById('sumDate').textContent = selectedDay;
-            document.getElementById('sumAmt').textContent = '₹' + amount.toLocaleString('en-IN');
-            document.getElementById('sumId').textContent = booking.id;
-            document.getElementById('qrBox').innerHTML = '';
-            QRCode.toCanvas(booking.id, { width: 168, margin: 1, color: { dark: '#2C120A', light: '#FFFBF2' } }, (err, canvas) => {
-              if(!err){
-                canvas.style.borderRadius = '10px';
-                document.getElementById('qrBox').appendChild(canvas);
-              }
-            });
-            successOverlay.classList.add('show');
+            showBookingConfirmed(booking, amount, name);
           } else {
             showStatus('Payment hua par verify nahi ho paaya — support se contact karein.', false);
           }
           payBtn.disabled = false;
-          payBtn.textContent = 'Pay via Razorpay';
+          payBtn.textContent = payBtnLabel;
         },
         modal: {
           ondismiss: function(){
             payBtn.disabled = false;
-            payBtn.textContent = 'Pay via Razorpay';
+            payBtn.textContent = payBtnLabel;
           }
         }
       });
@@ -733,8 +738,98 @@
       console.error(err);
       showStatus('Kuch galat ho gaya, dobara try karein.', false);
       payBtn.disabled = false;
-      payBtn.textContent = 'Pay via Razorpay';
+      payBtn.textContent = payBtnLabel;
     }
+  });
+
+  function showBookingConfirmed(booking, amount, name){
+    // swap sheets: hide details, show confirmation
+    detailsOverlay.classList.remove('show');
+    document.getElementById('sumPass').textContent = `${qty} × ${selected.label}`;
+    document.getElementById('sumDate').textContent = selectedDay;
+    document.getElementById('sumAmt').textContent = '₹' + amount.toLocaleString('en-IN');
+    document.getElementById('sumId').textContent = booking.id;
+    document.getElementById('qrBox').innerHTML = '';
+    QRCode.toCanvas(booking.id, { width: 168, margin: 1, color: { dark: '#2C120A', light: '#FFFBF2' } }, (err, canvas) => {
+      if(!err){
+        canvas.style.borderRadius = '10px';
+        document.getElementById('qrBox').appendChild(canvas);
+      }
+    });
+    lastBooking = { id: booking.id, name, pass: `${qty} × ${selected.label}`, date: selectedDay, amount };
+    successOverlay.classList.add('show');
+  }
+
+  // Build a self-contained ticket image (event details + QR) and download it as PNG.
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    if(!lastBooking) return;
+    QRCode.toDataURL(lastBooking.id, { width: 320, margin: 1, color: { dark: '#2C120A', light: '#FFFBF2' } }, (err, qrDataUrl) => {
+      if(err){ showStatus('Ticket banate waqt error aaya.', false); return; }
+
+      const W = 640, H = 960;
+      const canvas = document.createElement('canvas');
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+
+      // background
+      ctx.fillStyle = '#F3E7CF';
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = '#C79A3C';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(16, 16, W - 32, H - 32);
+
+      ctx.fillStyle = '#2C120A';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 40px Georgia, serif';
+      ctx.fillText('Dandiya Raas Night', W / 2, 90);
+
+      ctx.font = '22px Georgia, serif';
+      ctx.fillStyle = '#7A5230';
+      ctx.fillText('Entry Ticket', W / 2, 128);
+
+      const qrImg = new Image();
+      qrImg.onload = () => {
+        const qrSize = 320;
+        ctx.drawImage(qrImg, (W - qrSize) / 2, 160, qrSize, qrSize);
+
+        let y = 530;
+        const lineGap = 46;
+        ctx.textAlign = 'left';
+        const rows = [
+          ['Name', lastBooking.name],
+          ['Pass', lastBooking.pass],
+          ['Date', lastBooking.date],
+          ['Amount', '₹' + lastBooking.amount.toLocaleString('en-IN')],
+          ['Ticket ID', lastBooking.id]
+        ];
+        rows.forEach(([label, value]) => {
+          ctx.font = '20px Georgia, serif';
+          ctx.fillStyle = '#7A5230';
+          ctx.fillText(label, 60, y);
+          ctx.font = 'bold 22px Georgia, serif';
+          ctx.fillStyle = '#2C120A';
+          ctx.fillText(String(value), 200, y);
+          y += lineGap;
+        });
+
+        ctx.textAlign = 'center';
+        ctx.font = '18px Georgia, serif';
+        ctx.fillStyle = '#7A5230';
+        ctx.fillText('Entry par yahi QR dikhana hoga.', W / 2, H - 40);
+
+        canvas.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `dandiya-ticket-${lastBooking.id}.png`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        });
+      };
+      qrImg.src = qrDataUrl;
+    });
   });
 </script>
 </body>
