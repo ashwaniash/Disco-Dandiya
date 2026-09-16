@@ -238,20 +238,7 @@
   // check. Nothing secret is stored in this file (anon/publishable key only).
   // -----------------
 
-  // Debug helper: show any JS error directly on the gate screen so it's
-  // visible even without opening browser devtools console.
-  window.addEventListener('error', (e) => {
-    const gateErr = document.getElementById('gateErr');
-    if(gateErr) gateErr.textContent = 'JS error: ' + e.message;
-  });
-
-  if(!window.supabase){
-    document.getElementById('gateErr').textContent =
-      'Supabase library load nahi hui — internet/CDN block ho sakta hai.';
-    throw new Error('supabase-js failed to load');
-  }
-
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   let currentSession = null;
   let allBookings = [];
 
@@ -288,7 +275,7 @@
     unlockBtn.disabled = true;
     unlockBtn.textContent = 'Checking…';
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
       if(error){
         gateErr.textContent = 'Wrong ID ya password.';
         unlockBtn.disabled = false;
@@ -307,18 +294,18 @@
   });
 
   document.getElementById('logoutBtn').addEventListener('click', async () => {
-    await supabase.auth.signOut();
+    await sb.auth.signOut();
     currentSession = null;
     showGate();
   });
 
   // keep currentSession in sync (handles token refresh automatically)
-  supabase.auth.onAuthStateChange((_event, session) => {
+  sb.auth.onAuthStateChange((_event, session) => {
     currentSession = session;
   });
 
   // auto-login if a Supabase session already exists (e.g. page refresh)
-  supabase.auth.getSession().then(({ data }) => {
+  sb.auth.getSession().then(({ data }) => {
     if(data.session){
       currentSession = data.session;
       showApp();
@@ -475,7 +462,7 @@
   };
 
   async function loadSettingsPreview(){
-    const { data, error } = await supabase.from('site_config').select('*').eq('id', 1).maybeSingle();
+    const { data, error } = await sb.from('site_config').select('*').eq('id', 1).maybeSingle();
     if(error || !data) return;
     Object.values(ASSET_FIELDS).forEach(f => {
       const url = data[f.column];
@@ -496,7 +483,7 @@
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
     const path = `${f.path}.${ext}`;
 
-    const { error: uploadErr } = await supabase.storage
+    const { error: uploadErr } = await sb.storage
       .from('site-assets')
       .upload(path, file, { upsert: true, cacheControl: '3600' });
 
@@ -506,10 +493,10 @@
       return;
     }
 
-    const { data: pub } = supabase.storage.from('site-assets').getPublicUrl(path);
+    const { data: pub } = sb.storage.from('site-assets').getPublicUrl(path);
     const publicUrl = pub.publicUrl + '?v=' + Date.now(); // cache-bust so the site picks up the new image
 
-    const { error: updateErr } = await supabase
+    const { error: updateErr } = await sb
       .from('site_config')
       .upsert({ id: 1, [f.column]: publicUrl, updated_at: new Date().toISOString() });
 
