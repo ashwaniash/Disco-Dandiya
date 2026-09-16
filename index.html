@@ -585,31 +585,35 @@
     continueBtn.disabled = false;
   }
 
+  function selectPass(el, newQty){
+    passEls.forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    selected = {
+      type: el.dataset.type,
+      unitPrice: Number(el.dataset.price),
+      per: Number(el.dataset.per),
+      label: el.querySelector('.name').textContent
+    };
+    qty = newQty;
+    refreshTotals();
+  }
+
   passEls.forEach(el => {
     el.addEventListener('click', (e) => {
       if(e.target.classList.contains('minus') || e.target.classList.contains('plus')) return;
-      passEls.forEach(p => p.classList.remove('selected'));
-      el.classList.add('selected');
-      selected = {
-        type: el.dataset.type,
-        unitPrice: Number(el.dataset.price),
-        per: Number(el.dataset.per),
-        label: el.querySelector('.name').textContent
-      };
-      qty = Number(el.querySelector('.n').textContent);
-      refreshTotals();
+      selectPass(el, Number(el.querySelector('.n').textContent));
     });
     el.querySelector('.minus').addEventListener('click', () => {
       const n = el.querySelector('.n');
       let v = Math.max(1, Number(n.textContent) - 1);
       n.textContent = v;
-      if(selected && selected.type === el.dataset.type){ qty = v; refreshTotals(); }
+      selectPass(el, v);
     });
     el.querySelector('.plus').addEventListener('click', () => {
       const n = el.querySelector('.n');
       let v = Math.min(20, Number(n.textContent) + 1);
       n.textContent = v;
-      if(selected && selected.type === el.dataset.type){ qty = v; refreshTotals(); }
+      selectPass(el, v);
     });
   });
 
