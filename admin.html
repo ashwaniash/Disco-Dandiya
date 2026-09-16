@@ -235,6 +235,14 @@
   .settings-status{ font-size:0.78rem; margin-top:8px; min-height:1em; font-weight:600; }
   .settings-status.ok{ color:var(--teal); }
   .settings-status.err{ color:var(--rani); }
+  .clearicon{
+    background:none; border:none; padding:0; color:var(--rani); font-size:0.74rem;
+    cursor:pointer; text-decoration:underline; font-family:'Work Sans',sans-serif;
+  }
+  .settings-video-preview{
+    display:block; max-width:220px; aspect-ratio:9/16; object-fit:cover;
+    border-radius:var(--r-sm); border:1px solid var(--line); margin-bottom:10px; background:#000;
+  }
 
   /* Gallery (previous year glimpses) */
   .gallery-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:10px; }
@@ -467,6 +475,14 @@
         <p class="settings-hint">Upload up to 5 photos from previous events — they auto-scroll in the "Previous Year Glimpses" section on the website, right below "Choose your pass". JPG/PNG, keep each under 2MB.</p>
         <div class="gallery-grid" id="galleryGrid"></div>
         <div class="settings-status" id="statusGallery"></div>
+      </div>
+      <div class="settings-group">
+        <label>Event Video</label>
+        <p class="settings-hint">Upload a vertical (9:16 portrait) video — it auto-plays on loop, right below "Previous Year Glimpses" on the website, with a tap-to-unmute button. Keep it under 25MB for fast loading; MP4 works best.</p>
+        <video class="settings-video-preview" id="previewVideo" style="display:none;" muted loop autoplay playsinline controls></video>
+        <input type="file" id="fileVideo" accept="video/*">
+        <button type="button" class="clearicon" id="clearVideoBtn" style="display:none; margin-top:8px;">Remove video</button>
+        <div class="settings-status" id="statusVideo"></div>
       </div>
       <div class="settings-group">
         <label>Top Logo (small badge above main logo)</label>
@@ -1153,6 +1169,71 @@
     renderGallery();
   }
 
+  // ---- Settings: event video (9:16, auto-loop on the site) ----
+  async function uploadVideo(file){
+    const statusEl = document.getElementById('statusVideo');
+    if(file.size > 25 * 1024 * 1024){
+      statusEl.className = 'settings-status err';
+      statusEl.textContent = 'Please keep the video under 25MB.';
+      return;
+    }
+    statusEl.className = 'settings-status';
+    statusEl.textContent = 'Uploading…';
+    const ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+    const path = `video/event-video-${Date.now()}.${ext}`;
+
+    const { error: upErr } = await sb.storage
+      .from('site-assets')
+      .upload(path, file, { upsert: true, cacheControl: '3600' });
+    if(upErr){
+      statusEl.className = 'settings-status err';
+      statusEl.textContent = 'Upload fail: ' + upErr.message;
+      return;
+    }
+    const { data: pub } = sb.storage.from('site-assets').getPublicUrl(path);
+    const publicUrl = pub.publicUrl + '?v=' + Date.now();
+
+    const { error: updateErr } = await sb
+      .from('site_config')
+      .upsert({ id: 1, event_video_url: publicUrl, updated_at: new Date().toISOString() });
+    if(updateErr){
+      statusEl.className = 'settings-status err';
+      statusEl.textContent = 'Save fail: ' + updateErr.message;
+      return;
+    }
+
+    statusEl.className = 'settings-status ok';
+    statusEl.textContent = 'Saved ✓';
+    const preview = document.getElementById('previewVideo');
+    preview.src = publicUrl;
+    preview.style.display = 'block';
+    document.getElementById('clearVideoBtn').style.display = 'inline';
+  }
+
+  document.getElementById('fileVideo').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(file) uploadVideo(file);
+  });
+
+  document.getElementById('clearVideoBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('statusVideo');
+    statusEl.className = 'settings-status';
+    statusEl.textContent = 'Removing…';
+    const { error } = await sb.from('site_config')
+      .upsert({ id: 1, event_video_url: null, updated_at: new Date().toISOString() });
+    if(error){
+      statusEl.className = 'settings-status err';
+      statusEl.textContent = 'Fail: ' + error.message;
+      return;
+    }
+    statusEl.className = 'settings-status ok';
+    statusEl.textContent = 'Removed ✓';
+    const preview = document.getElementById('previewVideo');
+    preview.removeAttribute('src');
+    preview.style.display = 'none';
+    document.getElementById('clearVideoBtn').style.display = 'none';
+  });
+
   async function loadSettingsPreview(){
     const { data, error } = await sb.from('site_config').select('*').eq('id', 1).maybeSingle();
     if(error || !data){
@@ -1168,6 +1249,13 @@
       gallery.slice(0, GALLERY_MAX).forEach((url, i) => { galleryUrls[i] = url || null; });
     }
     renderGallery();
+
+    if(data.event_video_url){
+      const preview = document.getElementById('previewVideo');
+      preview.src = data.event_video_url;
+      preview.style.display = 'block';
+      document.getElementById('clearVideoBtn').style.display = 'inline';
+    }
 
     let feats = data.features;
     if(typeof feats === 'string'){ try { feats = JSON.parse(feats); } catch(e){ feats = null; } }
