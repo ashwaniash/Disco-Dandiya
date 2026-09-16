@@ -6,7 +6,7 @@
 <title>Dandiya Raas Night — Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
@@ -340,6 +340,10 @@
   let scannerStarting = false;
   function initScanner(){
     if(scanner || scannerStarting) return;
+    if(typeof Html5Qrcode === 'undefined'){
+      showResult('err', 'Scanner library load nahi hui', 'Internet slow ho sakta hai — page reload karke dobara try karein.');
+      return;
+    }
     scannerStarting = true;
     const instance = new Html5Qrcode("qr-reader");
     Html5Qrcode.getCameras().then(cams => {
