@@ -833,16 +833,17 @@
     const amount = selected.unitPrice * qty; // in rupees
 
     try {
-      // 1. Create the booking row with a short, human-friendly ticket ID
-      //    (4 characters, letters + numbers). We insert without reading it
-      //    back, so this only needs an INSERT policy — no RLS SELECT policy
-      //    required (safer, and avoids the 401/403 "insert worked but
-      //    read-back was blocked" failure mode). On the rare chance of a
-      //    collision (unique constraint violation), we retry with a new code.
-      let bookingId, insertErr;
-      for(let attempt = 0; attempt < 8; attempt++){
-        bookingId = genTicketId();
-        const res = await sb.from('bookings').insert({
+      // The database's booking ID must stay a real UUID (that's what the
+      // table's id column and the admin check-in/QR-scan flow expect).
+      // We separately generate a short, friendly 4-character code purely
+      // for what's shown to the customer as their "Ticket ID" — it's not
+      // used for lookups, just a nicer thing to read/reference.
+      const bookingId = (crypto.randomUUID && crypto.randomUUID()) ||
+        `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const shortId = genTicketId();
+      const { error: insertErr } = await sb
+        .from('bookings')
+        .insert({
           id: bookingId,
           name, phone, email: email || null,
           pass_type: selected.type,
@@ -851,12 +852,8 @@
           amount: amount,
           status: BYPASS_PAYMENT ? 'paid' : 'pending'
         });
-        insertErr = res.error;
-        if(!insertErr) break;
-        if(insertErr.code !== '23505') break; // not a duplicate-ID error — don't retry
-      }
       if(insertErr) throw insertErr;
-      const booking = { id: bookingId };
+      const booking = { id: bookingId, shortId };
 
       if(BYPASS_PAYMENT){
         // Skip Razorpay entirely — go straight to the confirmation screen.
@@ -928,7 +925,7 @@
     document.getElementById('sumPass').textContent = `${qty} × ${selected.label}`;
     document.getElementById('sumDate').textContent = selectedDay;
     document.getElementById('sumAmt').textContent = '₹' + amount.toLocaleString('en-IN');
-    document.getElementById('sumId').textContent = booking.id;
+    document.getElementById('sumId').textContent = booking.shortId;
     document.getElementById('qrBox').innerHTML = '';
     if (typeof QRCode === 'undefined') {
       document.getElementById('qrBox').textContent = booking.id;
@@ -940,7 +937,7 @@
         }
       });
     }
-    lastBooking = { id: booking.id, name, pass: `${qty} × ${selected.label}`, date: selectedDay, amount };
+    lastBooking = { id: booking.id, shortId: booking.shortId, name, pass: `${qty} × ${selected.label}`, date: selectedDay, amount };
     successOverlay.classList.add('show');
   }
 
@@ -985,7 +982,7 @@
           ['Pass', lastBooking.pass],
           ['Date', lastBooking.date],
           ['Amount', '₹' + lastBooking.amount.toLocaleString('en-IN')],
-          ['Ticket ID', lastBooking.id]
+          ['Ticket ID', lastBooking.shortId]
         ];
         rows.forEach(([label, value]) => {
           ctx.font = '20px Georgia, serif';
@@ -1006,7 +1003,7 @@
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `dandiya-ticket-${lastBooking.id}.png`;
+          a.download = `dandiya-ticket-${lastBooking.shortId}.png`;
           document.body.appendChild(a);
           a.click();
           a.remove();
