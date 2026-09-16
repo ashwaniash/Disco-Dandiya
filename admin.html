@@ -238,6 +238,19 @@
   // check. Nothing secret is stored in this file (anon/publishable key only).
   // -----------------
 
+  // Debug helper: show any JS error directly on the gate screen so it's
+  // visible even without opening browser devtools console.
+  window.addEventListener('error', (e) => {
+    const gateErr = document.getElementById('gateErr');
+    if(gateErr) gateErr.textContent = 'JS error: ' + e.message;
+  });
+
+  if(!window.supabase){
+    document.getElementById('gateErr').textContent =
+      'Supabase library load nahi hui — internet/CDN block ho sakta hai.';
+    throw new Error('supabase-js failed to load');
+  }
+
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   let currentSession = null;
   let allBookings = [];
