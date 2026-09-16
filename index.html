@@ -9,7 +9,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.4.4/qrcode.min.js"></script>
+<script>
+  // Fallback in case the CDN above is blocked/unavailable in some browsers/networks
+  (function(){
+    if (typeof QRCode === 'undefined') {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+      document.head.appendChild(s);
+    }
+  })();
+</script>
 <style>
   :root{
     --night: #F2E7D3;
@@ -753,12 +763,16 @@
     document.getElementById('sumAmt').textContent = '₹' + amount.toLocaleString('en-IN');
     document.getElementById('sumId').textContent = booking.id;
     document.getElementById('qrBox').innerHTML = '';
-    QRCode.toCanvas(booking.id, { width: 168, margin: 1, color: { dark: '#2C120A', light: '#FFFBF2' } }, (err, canvas) => {
-      if(!err){
-        canvas.style.borderRadius = '10px';
-        document.getElementById('qrBox').appendChild(canvas);
-      }
-    });
+    if (typeof QRCode === 'undefined') {
+      document.getElementById('qrBox').textContent = booking.id;
+    } else {
+      QRCode.toCanvas(booking.id, { width: 168, margin: 1, color: { dark: '#2C120A', light: '#FFFBF2' } }, (err, canvas) => {
+        if(!err){
+          canvas.style.borderRadius = '10px';
+          document.getElementById('qrBox').appendChild(canvas);
+        }
+      });
+    }
     lastBooking = { id: booking.id, name, pass: `${qty} × ${selected.label}`, date: selectedDay, amount };
     successOverlay.classList.add('show');
   }
@@ -766,6 +780,7 @@
   // Build a self-contained ticket image (event details + QR) and download it as PNG.
   document.getElementById('downloadBtn').addEventListener('click', () => {
     if(!lastBooking) return;
+    if (typeof QRCode === 'undefined') { showStatus('QR library load nahi hui, page reload karein.', false); return; }
     QRCode.toDataURL(lastBooking.id, { width: 320, margin: 1, color: { dark: '#2C120A', light: '#FFFBF2' } }, (err, qrDataUrl) => {
       if(err){ showStatus('Ticket banate waqt error aaya.', false); return; }
 
