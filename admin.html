@@ -10,10 +10,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
-    --night:#F2EAD9; --night-2:#FFFFFF; --gold:#B8862E; --rani:#9C2B2B; --teal:#3F6B3F;
+    --night:#F2EAD9; --night-2:#FFFFFF; --gold:#B8862E; --rani:#9C2B2B; --teal:#3F6B3F; --violet:#5B3E8C;
     --cream:#2C120A; --line:rgba(44,18,10,0.13);
     --muted:rgba(44,18,10,0.56); --muted-2:rgba(44,18,10,0.40);
-    --gold-soft:rgba(184,134,46,0.13); --rani-soft:rgba(156,43,43,0.11); --teal-soft:rgba(63,107,63,0.13);
+    --gold-soft:rgba(184,134,46,0.13); --rani-soft:rgba(156,43,43,0.11); --teal-soft:rgba(63,107,63,0.13); --violet-soft:rgba(91,62,140,0.13);
     --shadow-sm:0 1px 2px rgba(44,18,10,0.04), 0 3px 10px rgba(44,18,10,0.045);
     --shadow-md:0 2px 6px rgba(44,18,10,0.05), 0 10px 26px rgba(44,18,10,0.07);
     --r-sm:10px; --r-md:14px; --r-lg:18px;
@@ -38,9 +38,9 @@
   }
   .gate-mark{
     width:48px; height:48px; border-radius:14px; margin:0 auto 16px;
-    background:linear-gradient(145deg, var(--gold), #96691F);
+    background:linear-gradient(135deg, var(--gold), var(--rani) 55%, var(--violet));
     display:flex; align-items:center; justify-content:center;
-    box-shadow:0 6px 16px rgba(184,134,46,0.35);
+    box-shadow:0 6px 16px rgba(156,43,43,0.3);
   }
   .gate-mark svg{ width:24px; height:24px; stroke:#fff; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
   .gate .display{ font-size:1.4rem; margin-bottom:4px; }
@@ -67,9 +67,9 @@
   .header-id{ display:flex; align-items:center; gap:11px; min-width:0; }
   .header-mark{
     width:38px; height:38px; border-radius:11px; flex-shrink:0;
-    background:linear-gradient(145deg, var(--gold), #96691F);
+    background:linear-gradient(135deg, var(--gold), var(--rani) 55%, var(--violet));
     display:flex; align-items:center; justify-content:center;
-    box-shadow:0 4px 12px rgba(184,134,46,0.3);
+    box-shadow:0 4px 12px rgba(156,43,43,0.28);
   }
   .header-mark svg{ width:19px; height:19px; stroke:#fff; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
   header .display{ font-size:1.22rem; line-height:1.2; }
@@ -89,8 +89,11 @@
     font-family:'Inter',sans-serif; font-weight:600; font-size:0.85rem; cursor:pointer;
     transition:background .14s ease, color .14s ease;
   }
-  .tabs button.active{ background:var(--gold); color:#fff; box-shadow:0 4px 12px rgba(184,134,46,0.3); }
+  .tabs button.active{ color:#fff; }
   .tabs button svg{ width:16px; height:16px; }
+  #tabScanBtn.active{ background:var(--gold); box-shadow:0 4px 12px rgba(184,134,46,0.3); }
+  #tabBookingsBtn.active{ background:var(--teal); box-shadow:0 4px 12px rgba(63,107,63,0.3); }
+  #tabSettingsBtn.active{ background:var(--rani); box-shadow:0 4px 12px rgba(156,43,43,0.3); }
 
   .panel{ display:none; }
   .panel.active{ display:block; }
@@ -103,18 +106,27 @@
   #qr-reader{ width:100%; min-height:230px; border-radius:var(--r-md); overflow:hidden; border:1px solid var(--line); background:#000; }
   .scan-stage{ position:relative; }
   .scan-hint{ text-align:center; font-size:0.8rem; color:var(--muted); margin:12px 0 14px; }
-  .scan-controls{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
-  .scan-controls select{
-    flex:1; min-width:140px; padding:10px 12px; border-radius:var(--r-sm); border:1px solid var(--line);
-    background:var(--night-2); color:var(--cream); font-size:0.82rem; font-family:'Inter',sans-serif;
-  }
+  .scan-controls{ display:flex; justify-content:center; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
   .scan-controls button{
     display:flex; align-items:center; gap:6px;
     background:var(--night-2); border:1px solid var(--gold); color:var(--gold); border-radius:var(--r-sm);
     padding:10px 14px; font-weight:600; font-size:0.82rem; cursor:pointer; font-family:'Inter',sans-serif;
   }
-  .scan-controls button.on{ background:var(--gold); color:#fff; }
   .scan-controls button:disabled{ opacity:0.5; cursor:not-allowed; }
+
+  /* Flash + camera-switch icon buttons, floated directly over the live camera feed */
+  .scan-cam-controls{
+    position:absolute; top:10px; right:10px; display:flex; gap:8px; z-index:2;
+  }
+  .cam-icon-btn{
+    width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,0.25);
+    background:rgba(10,4,2,0.55); backdrop-filter:blur(2px); color:#fff;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:transform .12s ease, background .14s ease;
+  }
+  .cam-icon-btn svg{ width:18px; height:18px; }
+  .cam-icon-btn:active{ transform:scale(0.92); }
+  .cam-icon-btn.on{ background:var(--gold); border-color:var(--gold); box-shadow:0 0 0 3px rgba(184,134,46,0.28); }
 
   /* Scan result — full-screen-over-camera popup, so a fresh scan is always unmistakable */
   .scan-overlay{
@@ -173,6 +185,7 @@
   .stat.acc-gold .stat-icon{ background:var(--gold-soft); color:var(--gold); }
   .stat.acc-teal .stat-icon{ background:var(--teal-soft); color:var(--teal); }
   .stat.acc-rani .stat-icon{ background:var(--rani-soft); color:var(--rani); }
+  .stat.acc-violet .stat-icon{ background:var(--violet-soft); color:var(--violet); }
   .stat b{ display:block; font-family:'Playfair Display',serif; font-size:1.28rem; line-height:1; color:var(--cream); }
   .stat span{ font-size:0.68rem; color:var(--muted); font-weight:600; }
 
@@ -201,6 +214,9 @@
     font-size:0.66rem; font-weight:700; color:#fff;
     background:linear-gradient(145deg, var(--gold), #96691F);
   }
+  tbody tr:nth-child(4n+2) .avatar{ background:linear-gradient(145deg, var(--teal), #2F5C34); }
+  tbody tr:nth-child(4n+3) .avatar{ background:linear-gradient(145deg, var(--rani), #6E1F1F); }
+  tbody tr:nth-child(4n+4) .avatar{ background:linear-gradient(145deg, var(--violet), #3E2A63); }
   .badge{
     display:inline-flex; align-items:center; gap:5px;
     padding:3px 9px 3px 7px; border-radius:999px; font-size:0.68rem; font-weight:600;
@@ -371,6 +387,15 @@
         <div class="scan-stage" id="scanStage">
           <div id="qr-reader"></div>
 
+          <div class="scan-cam-controls">
+            <button id="torchBtn" class="cam-icon-btn" type="button" style="display:none;" aria-label="Toggle flash" title="Flash">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg>
+            </button>
+            <button id="camSwitchBtn" class="cam-icon-btn" type="button" style="display:none;" aria-label="Switch camera" title="Switch camera">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2.1 21 6l-4 3.9"/><path d="M3 12.6v-2a4 4 0 0 1 4-4h14"/><path d="M7 21.9 3 18l4-3.9"/><path d="M21 11.4v2a4 4 0 0 1-4 4H3"/></svg>
+            </button>
+          </div>
+
           <div class="scan-overlay" id="scanResult">
             <div class="scan-card">
               <div class="icon" id="resIcon"></div>
@@ -386,7 +411,6 @@
 
         <div class="scan-controls">
           <select id="cameraSelect" style="display:none;"></select>
-          <button id="torchBtn" type="button" style="display:none;">🔦 Flash</button>
           <button id="retryCameraBtn" type="button">Retry camera</button>
         </div>
 
@@ -412,7 +436,7 @@
           <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
           <b id="stIn">0</b><span>Checked-in</span>
         </div>
-        <div class="stat acc-gold">
+        <div class="stat acc-violet">
           <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12l-1.5 5.5a5 5 0 0 1-9 0Z"/><path d="M12 15v5"/><path d="M8.5 20h7"/></svg></div>
           <b id="stRev">₹0</b><span>Revenue</span>
         </div>
@@ -618,6 +642,7 @@
 
   const cameraSelect = document.getElementById('cameraSelect');
   const torchBtn = document.getElementById('torchBtn');
+  const camSwitchBtn = document.getElementById('camSwitchBtn');
   const retryCameraBtn = document.getElementById('retryCameraBtn');
 
   function pickDefaultCamId(cams){
@@ -644,12 +669,13 @@
         throw new Error('NO_CAMERAS_FOUND');
       }
 
-      // populate camera picker (only useful when device has more than one camera)
+      // keep a hidden <select> as the source of truth for the current camera id;
+      // the visible control is the flip-camera icon button over the video
       if(availableCams.length > 1){
         cameraSelect.innerHTML = availableCams.map(c => `<option value="${c.id}">${c.label || 'Camera'}</option>`).join('');
-        cameraSelect.style.display = 'block';
+        camSwitchBtn.style.display = 'flex';
       } else {
-        cameraSelect.style.display = 'none';
+        camSwitchBtn.style.display = 'none';
       }
 
       const camId = preferredCamId || pickDefaultCamId(availableCams) || availableCams[0].id;
@@ -677,7 +703,7 @@
       scanner = null;
       scannerStarting = false;
       retryCameraBtn.disabled = false;
-      cameraSelect.style.display = 'none';
+      camSwitchBtn.style.display = 'none';
       torchBtn.style.display = 'none';
 
       const msg = String(err && err.message || err || '');
@@ -711,9 +737,8 @@
     try {
       const caps = scanner.getRunningTrackCapabilities();
       if(caps && 'torch' in caps){
-        torchBtn.style.display = 'inline-block';
+        torchBtn.style.display = 'flex';
         torchBtn.disabled = false;
-        torchBtn.textContent = '🔦 Flash';
         torchBtn.classList.remove('on');
         torchOn = false;
       } else {
@@ -731,16 +756,24 @@
       await scanner.applyVideoConstraints({ advanced: [{ torch: next }] });
       torchOn = next;
       torchBtn.classList.toggle('on', torchOn);
-      torchBtn.textContent = torchOn ? '🔦 Flash ON' : '🔦 Flash';
     } catch(e) {
       // some devices report the capability but still refuse the constraint — fail quietly, keep old state
     }
   });
 
-  cameraSelect.addEventListener('change', async () => {
-    const camId = cameraSelect.value;
+  async function switchToCamera(camId){
     await stopScanner();
     initScanner(camId);
+  }
+
+  cameraSelect.addEventListener('change', () => switchToCamera(cameraSelect.value));
+
+  camSwitchBtn.addEventListener('click', () => {
+    if(availableCams.length < 2) return;
+    const idx = availableCams.findIndex(c => c.id === cameraSelect.value);
+    const next = availableCams[(idx + 1) % availableCams.length];
+    cameraSelect.value = next.id;
+    switchToCamera(next.id);
   });
 
   function onScan(text){
