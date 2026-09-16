@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Disco Dandiya 7.0 — Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -20,13 +20,13 @@
   }
   *{box-sizing:border-box;}
   body{
-    margin:0; background:var(--night); color:var(--cream); font-family:'Inter',sans-serif;
+    margin:0; background:var(--night); color:var(--cream); font-family:'Plus Jakarta Sans',sans-serif;
     min-height:100vh; -webkit-font-smoothing:antialiased;
     background-image: radial-gradient(circle at 12% 0%, rgba(184,134,46,0.09), transparent 42%),
                        radial-gradient(circle at 88% 8%, rgba(156,43,43,0.07), transparent 42%);
     background-attachment:fixed;
   }
-  h1,.display{ font-family:'Playfair Display',serif; font-weight:600; margin:0; letter-spacing:-0.01em; }
+  h1,.display{ font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; margin:0; letter-spacing:-0.01em; }
   .wrap{ max-width:760px; margin:0 auto; padding: 22px 18px 100px; }
   svg.icon{ width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
 
@@ -37,12 +37,11 @@
     border-radius:var(--r-lg); box-shadow:var(--shadow-md); padding:34px 28px 28px;
   }
   .gate-mark{
-    width:48px; height:48px; border-radius:14px; margin:0 auto 16px;
-    background:linear-gradient(135deg, var(--gold), var(--rani) 55%, var(--violet));
+    width:56px; height:56px; margin:0 auto 16px;
     display:flex; align-items:center; justify-content:center;
-    box-shadow:0 6px 16px rgba(156,43,43,0.3);
   }
-  .gate-mark svg{ width:24px; height:24px; stroke:#fff; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .gate-mark svg{ width:40px; height:40px; stroke:var(--gold); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  .gate-mark img{ width:100%; height:100%; object-fit:contain; }
   .gate .display{ font-size:1.4rem; margin-bottom:4px; }
   .gate p{ color:var(--muted); font-size:0.85rem; margin:0 0 22px; }
   .gate-field{ text-align:left; margin-bottom:12px; }
@@ -50,12 +49,12 @@
   .gate input{
     width:100%; text-align:left; letter-spacing:normal; font-size:0.92rem;
     padding:12px 13px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--night);
-    color:var(--cream); font-family:'Inter',sans-serif; transition:box-shadow .14s ease;
+    color:var(--cream); font-family:'Plus Jakarta Sans',sans-serif; transition:box-shadow .14s ease;
   }
   .gate input:focus{ outline:none; box-shadow:0 0 0 1.5px var(--gold); }
   .gate button{
     width:100%; margin-top:6px; background:var(--rani); color:#fff; border:none; padding:13px 26px; border-radius:var(--r-sm);
-    font-weight:600; font-size:0.92rem; cursor:pointer; font-family:'Inter',sans-serif;
+    font-weight:600; font-size:0.92rem; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif;
     box-shadow:0 6px 16px rgba(156,43,43,0.28); transition:transform .12s ease;
   }
   .gate button:active{ transform:scale(0.98); }
@@ -66,20 +65,18 @@
   header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; gap:12px; }
   .header-id{ display:flex; align-items:center; gap:11px; min-width:0; }
   .header-mark{
-    width:38px; height:38px; border-radius:11px; flex-shrink:0;
-    background:linear-gradient(135deg, var(--gold), var(--rani) 55%, var(--violet));
+    width:38px; height:38px; flex-shrink:0;
     display:flex; align-items:center; justify-content:center;
-    box-shadow:0 4px 12px rgba(156,43,43,0.28);
   }
-  .header-mark svg{ width:19px; height:19px; stroke:#fff; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
-  .header-mark img{ width:100%; height:100%; object-fit:contain; border-radius:inherit; padding:4px; }
+  .header-mark svg{ width:26px; height:26px; stroke:var(--gold); fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+  .header-mark img{ width:100%; height:100%; object-fit:contain; }
   header .display{ font-size:1.22rem; line-height:1.2; }
   header .sub{ font-size:0.74rem; color:var(--muted); margin-top:1px; }
   .logout-btn{
     display:flex; align-items:center; gap:6px; flex-shrink:0;
     background:var(--night-2); border:1px solid var(--line); color:var(--cream);
     box-shadow:var(--shadow-sm);
-    border-radius:var(--r-sm); padding:8px 13px; font-family:'Inter',sans-serif; font-size:0.78rem;
+    border-radius:var(--r-sm); padding:8px 13px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.78rem;
     font-weight:600; cursor:pointer; transition:transform .12s ease;
   }
   .logout-btn:active{ transform:scale(0.96); }
@@ -91,7 +88,7 @@
   .tabs button{
     flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
     padding:6px 4px; border:none; border-radius:9px; background:transparent; color:var(--muted-2);
-    font-family:'Inter',sans-serif; font-weight:600; font-size:0.66rem; cursor:pointer;
+    font-family:'Plus Jakarta Sans',sans-serif; font-weight:600; font-size:0.66rem; cursor:pointer;
     transition:color .14s ease;
   }
   .tabs button.active{ color:var(--gold); }
@@ -112,7 +109,7 @@
   .scan-controls button{
     display:flex; align-items:center; gap:6px;
     background:var(--night-2); border:1px solid var(--gold); color:var(--gold); border-radius:var(--r-sm);
-    padding:10px 14px; font-weight:600; font-size:0.82rem; cursor:pointer; font-family:'Inter',sans-serif;
+    padding:10px 14px; font-weight:600; font-size:0.82rem; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif;
   }
   .scan-controls button:disabled{ opacity:0.5; cursor:not-allowed; }
 
@@ -152,7 +149,7 @@
   .scan-overlay.warn .scan-card{ border-color:var(--gold); }
   .scan-overlay.err .scan-card{ border-color:var(--rani); }
   .scan-card .icon{ font-size:2.8rem; margin-bottom:8px; line-height:1; }
-  .scan-card .title{ font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:600; margin-bottom:6px; }
+  .scan-card .title{ font-family:'Plus Jakarta Sans',sans-serif; font-size:1.3rem; font-weight:600; margin-bottom:6px; }
   .scan-overlay.ok .scan-card .title{ color:#2F5C34; }
   .scan-overlay.warn .scan-card .title{ color:#7A5A1A; }
   .scan-overlay.err .scan-card .title{ color:var(--rani); }
@@ -165,7 +162,7 @@
   @keyframes scanCountdown{ from{ transform:scaleX(1); } to{ transform:scaleX(0); } }
   .scan-card .next-btn{
     width:100%; background:var(--gold); color:#fff; border:none; border-radius:var(--r-sm); padding:12px;
-    font-weight:700; font-size:0.92rem; cursor:pointer; font-family:'Inter',sans-serif;
+    font-weight:700; font-size:0.92rem; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif;
   }
   .manual{ display:flex; gap:8px; margin-bottom:18px; }
   .manual input{ flex:1; padding:11px 12px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--night-2); color:var(--cream); font-size:0.85rem; }
@@ -188,7 +185,7 @@
   .stat.acc-teal .stat-icon{ background:var(--teal-soft); color:var(--teal); }
   .stat.acc-rani .stat-icon{ background:var(--rani-soft); color:var(--rani); }
   .stat.acc-violet .stat-icon{ background:var(--violet-soft); color:var(--violet); }
-  .stat b{ display:block; font-family:'Playfair Display',serif; font-size:1.28rem; line-height:1; color:var(--cream); }
+  .stat b{ display:block; font-family:'Plus Jakarta Sans',sans-serif; font-size:1.28rem; line-height:1; color:var(--cream); }
   .stat span{ font-size:0.68rem; color:var(--muted); font-weight:600; }
 
   /* Bookings */
@@ -197,7 +194,7 @@
   .filters{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
   .filters input, .filters select{
     padding:9px 11px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--night-2); color:var(--cream); font-size:0.82rem;
-    font-family:'Inter',sans-serif;
+    font-family:'Plus Jakarta Sans',sans-serif;
   }
   .search-wrap{ position:relative; flex:1; min-width:160px; }
   .search-wrap svg{ position:absolute; left:11px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--muted-2); pointer-events:none; }
@@ -221,10 +218,10 @@
   .booking-row:nth-child(4n+3) .avatar{ background:linear-gradient(145deg, var(--rani), #6E1F1F); }
   .booking-row:nth-child(4n+4) .avatar{ background:linear-gradient(145deg, var(--violet), #3E2A63); }
   .badge{
-    display:inline-flex; align-items:center; gap:5px;
-    padding:3px 9px 3px 7px; border-radius:999px; font-size:0.68rem; font-weight:600;
+    display:inline-flex; align-items:center; gap:6px;
+    padding:5px 13px 5px 10px; border-radius:999px; font-size:0.78rem; font-weight:700;
   }
-  .badge::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+  .badge::before{ content:''; width:7px; height:7px; border-radius:50%; background:currentColor; flex-shrink:0; }
   .badge.paid{ background:rgba(63,107,63,0.15); color:#2F5C34; }
   .badge.pending{ background:rgba(184,134,46,0.2); color:#7A5A1A; }
   .badge.failed{ background:rgba(156,43,43,0.16); color:var(--rani); }
@@ -233,9 +230,36 @@
   .booking-row .b-name{ font-weight:700; font-size:0.98rem; color:var(--cream); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .booking-row .b-meta{ font-size:0.8rem; color:var(--muted); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .booking-row .b-right{ text-align:right; flex-shrink:0; }
-  .booking-row .b-amount{ font-family:'Playfair Display',serif; font-weight:700; font-size:1.05rem; color:var(--cream); }
+  .booking-row .b-amount{ font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:1.05rem; color:var(--cream); }
   .booking-row .b-badges{ display:flex; gap:6px; margin-top:7px; justify-content:flex-end; flex-wrap:wrap; }
+  .booking-row{ cursor:pointer; transition:transform .1s ease; }
+  .booking-row:active{ transform:scale(0.99); }
   .loading{ text-align:center; padding:36px; color:var(--muted); font-size:0.85rem; }
+
+  /* Booking detail modal (bottom sheet) */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(10,4,2,0.55); display:flex; align-items:flex-end; justify-content:center;
+    z-index:100; opacity:0; pointer-events:none; transition:opacity .18s ease;
+  }
+  .modal-overlay.show{ opacity:1; pointer-events:auto; }
+  .modal-card{
+    width:100%; max-width:480px; background:var(--night-2); border-radius:var(--r-lg) var(--r-lg) 0 0;
+    box-shadow:0 -12px 40px rgba(0,0,0,0.25); padding:20px 20px calc(20px + env(safe-area-inset-bottom));
+    transform:translateY(24px); transition:transform .22s cubic-bezier(.2,1,.3,1);
+    max-height:80vh; overflow-y:auto;
+  }
+  .modal-overlay.show .modal-card{ transform:translateY(0); }
+  .modal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:10px; }
+  .modal-header .display{ font-size:1.1rem; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .modal-close{
+    background:var(--night); border:1px solid var(--line); width:30px; height:30px; border-radius:50%;
+    font-size:1.05rem; line-height:1; color:var(--muted); cursor:pointer; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-family:'Plus Jakarta Sans',sans-serif;
+  }
+  .modal-row{ display:flex; justify-content:space-between; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); font-size:0.88rem; }
+  .modal-row:last-child{ border-bottom:none; }
+  .modal-row .m-label{ color:var(--muted); font-weight:600; }
+  .modal-row .m-value{ color:var(--cream); font-weight:700; text-align:right; }
 
 
   /* Settings */
@@ -243,7 +267,7 @@
     margin-bottom:16px; background:var(--night-2); border:1px solid var(--line); border-radius:var(--r-md);
     box-shadow:var(--shadow-sm); padding:18px 18px 20px;
   }
-  .settings-group label{ display:block; font-family:'Playfair Display',serif; font-weight:600; font-size:1.02rem; margin-bottom:5px; }
+  .settings-group label{ display:block; font-family:'Plus Jakarta Sans',sans-serif; font-weight:600; font-size:1.02rem; margin-bottom:5px; }
   .settings-hint{ font-size:0.78rem; color:var(--muted); margin:0 0 14px; line-height:1.5; }
   .settings-preview{
     display:block; max-width:100%; max-height:160px; border-radius:var(--r-sm);
@@ -254,7 +278,7 @@
     background:repeating-conic-gradient(#e4e4e4 0% 25%, #fff 0% 50%) 0 0 / 16px 16px;
   }
   .settings-group input[type="file"]{
-    font-size:0.8rem; font-family:'Inter',sans-serif; width:100%;
+    font-size:0.8rem; font-family:'Plus Jakarta Sans',sans-serif; width:100%;
     padding:9px 10px; border:1px dashed var(--line); border-radius:var(--r-sm); background:var(--night);
   }
   .settings-status{ font-size:0.78rem; margin-top:8px; min-height:1em; font-weight:600; }
@@ -262,7 +286,7 @@
   .settings-status.err{ color:var(--rani); }
   .clearicon{
     background:none; border:none; padding:0; color:var(--rani); font-size:0.74rem;
-    cursor:pointer; text-decoration:underline; font-family:'Inter',sans-serif;
+    cursor:pointer; text-decoration:underline; font-family:'Plus Jakarta Sans',sans-serif;
   }
   .settings-video-preview{
     display:block; max-width:220px; aspect-ratio:9/16; object-fit:cover;
@@ -286,7 +310,7 @@
   .gallery-slot input[type="file"]{ width:100%; font-size:0.62rem; padding:5px 6px; border-style:solid; }
   .gallery-slot .clearicon{
     background:none; border:none; padding:0; color:var(--rani); font-size:0.68rem;
-    cursor:pointer; text-decoration:underline; font-family:'Inter',sans-serif;
+    cursor:pointer; text-decoration:underline; font-family:'Plus Jakarta Sans',sans-serif;
   }
 
   /* Features editor */
@@ -299,7 +323,7 @@
   }
   .feat-row select, .feat-row input[type="text"]{
     width:100%; padding:7px 8px; border:1px solid var(--line); border-radius:6px;
-    font-family:'Inter',sans-serif; font-size:0.82rem; background:#fff; color:var(--cream);
+    font-family:'Plus Jakarta Sans',sans-serif; font-size:0.82rem; background:#fff; color:var(--cream);
   }
   .feat-row .feat-texts{ display:flex; flex-direction:column; gap:6px; }
   .feat-row .feat-tools{ display:flex; flex-direction:column; gap:5px; align-items:center; }
@@ -315,16 +339,16 @@
   .feat-preview svg{ width:20px; height:20px; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
   .feat-preview img{ width:22px; height:22px; object-fit:contain; }
   .feat-upload{ font-size:0.68rem; color:var(--muted); margin-top:4px; }
-  .feat-upload input[type="file"]{ font-size:0.66rem; width:100%; font-family:'Inter',sans-serif; }
+  .feat-upload input[type="file"]{ font-size:0.66rem; width:100%; font-family:'Plus Jakarta Sans',sans-serif; }
   .feat-upload .clearicon{
     background:none; border:none; padding:0; margin-top:3px;
     color:var(--rani); font-size:0.68rem; cursor:pointer; text-decoration:underline;
-    font-family:'Inter',sans-serif;
+    font-family:'Plus Jakarta Sans',sans-serif;
   }
   .feat-upload .upstatus{ display:block; font-weight:600; }
   .feat-actions{ display:flex; gap:8px; align-items:center; margin-top:10px; flex-wrap:wrap; }
   .feat-actions button{
-    padding:9px 15px; border-radius:var(--r-sm); font-family:'Inter',sans-serif;
+    padding:9px 15px; border-radius:var(--r-sm); font-family:'Plus Jakarta Sans',sans-serif;
     font-size:0.84rem; font-weight:600; cursor:pointer; border:1px solid var(--line);
     background:#fff; color:var(--cream);
   }
@@ -341,7 +365,8 @@
   <div class="gate" id="gate">
     <div class="gate-card">
       <div class="gate-mark">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg>
+        <img id="gateLogoImg" alt="Logo" style="display:none;">
+        <svg id="gateLogoFallback" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg>
       </div>
       <div class="display">Admin Access</div>
       <p>Log in with your admin email and password.</p>
@@ -562,7 +587,6 @@
     document.getElementById('app').style.display = 'block';
     initScanner();
     loadBookings();
-    loadHeaderLogo();
   }
 
   async function loadHeaderLogo(){
@@ -573,9 +597,13 @@
         document.getElementById('headerLogoImg').src = url;
         document.getElementById('headerLogoImg').style.display = 'block';
         document.getElementById('headerLogoFallback').style.display = 'none';
+        document.getElementById('gateLogoImg').src = url;
+        document.getElementById('gateLogoImg').style.display = 'block';
+        document.getElementById('gateLogoFallback').style.display = 'none';
       }
     } catch(e) { /* keep fallback mark if this fails */ }
   }
+  loadHeaderLogo(); // load on the login screen too, not just after auth
 
   function showGate(msg){
     document.getElementById('app').style.display = 'none';
@@ -921,10 +949,10 @@
     loading.style.display = filtered.length ? 'none' : 'block';
     if(!filtered.length){ loading.textContent = 'No bookings found.'; body.innerHTML = ''; return; }
 
-    body.innerHTML = filtered.map(b => {
+    body.innerHTML = filtered.map((b, i) => {
       const initials = (b.name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
       return `
-      <div class="booking-row">
+      <div class="booking-row" data-i="${i}">
         <span class="avatar">${initials}</span>
         <div class="b-main">
           <div class="b-name">${b.name}</div>
@@ -940,6 +968,7 @@
       </div>
     `;
     }).join('');
+    lastFiltered = filtered;
 
     const paid = allBookings.filter(b => b.status === 'paid');
     document.getElementById('stTotal').textContent = allBookings.length;
@@ -947,6 +976,43 @@
     document.getElementById('stIn').textContent = allBookings.filter(b => b.checked_in).length;
     document.getElementById('stRev').textContent = fmtMoney(paid.reduce((s, b) => s + Number(b.amount), 0));
   }
+
+  // ---- Booking detail modal (tap a booking row to see the full details) ----
+  let lastFiltered = [];
+  const bookingModalOverlay = document.getElementById('bookingModalOverlay');
+
+  function openBookingModal(b){
+    document.getElementById('modalName').textContent = b.name || 'Booking';
+    const rows = [
+      ['Phone', b.phone],
+      ['Pass type', b.pass_type],
+      ['Quantity', b.quantity],
+      ['Date', fmtDay(b.event_date)],
+      ['Amount', fmtMoney(b.amount)],
+      ['Status', b.status],
+      ['Entry', b.checked_in ? ('Scanned' + (b.checked_in_at ? ' · ' + new Date(b.checked_in_at).toLocaleString() : '')) : 'Not scanned yet'],
+    ];
+    document.getElementById('modalBody').innerHTML = rows.map(([label, value]) => `
+      <div class="modal-row"><span class="m-label">${label}</span><span class="m-value">${value ?? '—'}</span></div>
+    `).join('');
+    bookingModalOverlay.classList.add('show');
+  }
+
+  function closeBookingModal(){
+    bookingModalOverlay.classList.remove('show');
+  }
+
+  document.getElementById('bookingsList').addEventListener('click', (e) => {
+    const row = e.target.closest('.booking-row');
+    if(!row) return;
+    const b = lastFiltered[Number(row.dataset.i)];
+    if(b) openBookingModal(b);
+  });
+
+  document.getElementById('modalCloseBtn').addEventListener('click', closeBookingModal);
+  bookingModalOverlay.addEventListener('click', (e) => {
+    if(e.target === bookingModalOverlay) closeBookingModal();
+  });
 
   document.getElementById('searchBox').addEventListener('input', renderBookings);
   document.getElementById('dayFilter').addEventListener('change', renderBookings);
@@ -1380,5 +1446,16 @@
     });
   });
 </script>
+
+  <div class="modal-overlay" id="bookingModalOverlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="display" id="modalName">Booking</div>
+        <button class="modal-close" id="modalCloseBtn" type="button" aria-label="Close">✕</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
 </body>
 </html>
