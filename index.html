@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
   :root{
     --night: #1B0E2B;
@@ -386,11 +387,13 @@
         <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#0F6E6E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
       </div>
       <h2 class="display">Booking Confirmed!</h2>
-      <p>Pass isi number/email par bhej diya jaayega.</p>
+      <p>Entry par yahi QR dikhana hoga.</p>
+      <div id="qrBox" style="display:flex; justify-content:center; margin-bottom:18px;"></div>
       <div class="success-summary">
         <div><span>Pass</span><b id="sumPass">—</b></div>
         <div><span>Date</span><b id="sumDate">—</b></div>
         <div><span>Amount paid</span><b id="sumAmt">—</b></div>
+        <div><span>Ticket ID</span><b id="sumId" style="font-size:0.72rem;">—</b></div>
       </div>
       <button class="done-btn" id="doneBtn">Done</button>
     </div>
@@ -400,8 +403,8 @@
 
 <script>
   // ---- CONFIG: fill these in before going live ----
-  const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
-  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+  const SUPABASE_URL = "https://trhkmjqwkjvirqwabaxg.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_Y6OYlJ4aOUNP0W3aN09KkQ_bcMkthpY";
   const RAZORPAY_KEY_ID = "YOUR_RAZORPAY_KEY_ID"; // public key, safe on client
   // Edge Function endpoints (deployed from supabase-functions/ folder)
   const CREATE_ORDER_FN = `${SUPABASE_URL}/functions/v1/create-order`;
@@ -572,6 +575,14 @@
             document.getElementById('sumPass').textContent = `${qty} × ${selected.label}`;
             document.getElementById('sumDate').textContent = selectedDay;
             document.getElementById('sumAmt').textContent = '₹' + amount.toLocaleString('en-IN');
+            document.getElementById('sumId').textContent = booking.id;
+            document.getElementById('qrBox').innerHTML = '';
+            QRCode.toCanvas(booking.id, { width: 168, margin: 1, color: { dark: '#1B0E2B', light: '#F5EFE6' } }, (err, canvas) => {
+              if(!err){
+                canvas.style.borderRadius = '10px';
+                document.getElementById('qrBox').appendChild(canvas);
+              }
+            });
             successOverlay.classList.add('show');
           } else {
             showStatus('Payment hua par verify nahi ho paaya — support se contact karein.', false);
