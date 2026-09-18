@@ -664,7 +664,7 @@
 
       <div id="status" class="status"></div>
 
-      <button id="payBtn" class="rzp-btn">Pay via Cashfree</button>
+      <button id="payBtn" class="rzp-btn">Pay via Razorpay</button>
       <div class="secure-badge">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg>
         100% Secured Payment
@@ -717,7 +717,7 @@
       <img id="footerLogo" src="" alt="">
     </div>
     <div class="footer-copy">All rights reserved by S2 Events</div>
-    <div class="footer-meta">Payments secured via Cashfree · Bookings stored in Supabase</div>
+    <div class="footer-meta">Payments secured via Razorpay · Bookings stored in Supabase</div>
     <div class="footer-credit">Design by <a href="https://ominibase.online/" target="_blank" rel="noopener">Ominibase</a></div>
   </footer>
 
@@ -725,9 +725,11 @@
   // ---- CONFIG: fill these in before going live ----
   const SUPABASE_URL = "https://trhkmjqwkjvirqwabaxg.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_Y6OYlJ4aOUNP0W3aN09KkQ_bcMkthpY";
-  const RAZORPAY_KEY_ID = "YOUR_RAZORPAY_KEY_ID"; // public key, safe on client — fill this in separately
+  const RAZORPAY_KEY_ID = "rzp_live_TdYQx4wtqAZLBM"; // public key, safe on client
   // TEMPORARY: skip Razorpay entirely and auto-confirm bookings as paid.
-  // Set this back to false once real payments are ready to go live.
+  // Set this to false ONLY after RAZORPAY_KEY_ID above is filled in with your real
+  // key AND the create-order / verify-payment Edge Functions are deployed with
+  // RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET set as Supabase secrets.
   const BYPASS_PAYMENT = true;
   // Edge Function endpoints (deployed from supabase-functions/ folder)
   const CREATE_ORDER_FN = `${SUPABASE_URL}/functions/v1/create-order`;
@@ -745,7 +747,7 @@
   })();
 
   let selected = null; // { type, unitPrice, per, label }
-  const payBtnLabel = 'Pay via Cashfree';
+  const payBtnLabel = 'Pay via Razorpay';
   document.getElementById('payBtn').textContent = payBtnLabel;
   let qty = 1;
   let selectedDay = document.querySelector('.day-btn.selected').dataset.day;
