@@ -564,44 +564,7 @@
     <div class="section-title">Choose your pass</div>
     <p class="section-hint">Only one pass type can be selected at a time — choose the "Group" pass for group bookings.</p>
 
-    <div class="pass" data-type="solo" data-price="499" data-per="1">
-      <div class="pass-main">
-        <div class="name">Solo</div>
-        <div class="desc">1 person · 5 PM–10 PM access</div>
-        <div class="qty">
-          <button type="button" class="minus">−</button>
-          <span class="n">1</span>
-          <button type="button" class="plus">+</button>
-        </div>
-      </div>
-      <div class="pass-price"><div class="amt">₹499</div><div class="per">per pass</div></div>
-    </div>
-
-    <div class="pass" data-type="duo" data-price="799" data-per="2">
-      <div class="pass-main">
-        <div class="name">Duo</div>
-        <div class="desc">2 people · 5 PM–10 PM access</div>
-        <div class="qty">
-          <button type="button" class="minus">−</button>
-          <span class="n">1</span>
-          <button type="button" class="plus">+</button>
-        </div>
-      </div>
-      <div class="pass-price"><div class="amt">₹799</div><div class="per">per pass</div></div>
-    </div>
-
-    <div class="pass" data-type="group" data-price="1499" data-per="4">
-      <div class="pass-main">
-        <div class="name">Group</div>
-        <div class="desc">4 people · 5 PM–10 PM access</div>
-        <div class="qty">
-          <button type="button" class="minus">−</button>
-          <span class="n">1</span>
-          <button type="button" class="plus">+</button>
-        </div>
-      </div>
-      <div class="pass-price"><div class="amt">₹1,499</div><div class="per">per pass</div></div>
-    </div>
+    <div id="passList"></div>
 
   </div>
 
@@ -848,6 +811,12 @@
       if(Array.isArray(list) && list.length) renderFeatures(list);
     }
 
+    if(data.ticket_types) {
+      let tix = data.ticket_types;
+      if(typeof tix === 'string'){ try { tix = JSON.parse(tix); } catch(e){ tix = null; } }
+      if(Array.isArray(tix) && tix.length) renderPasses(tix);
+    }
+
     let gallery = data.gallery_images;
     if(typeof gallery === 'string'){ try { gallery = JSON.parse(gallery); } catch(e){ gallery = null; } }
     if(Array.isArray(gallery)){
@@ -908,7 +877,76 @@
     });
   });
 
-  const passEls = document.querySelectorAll('.pass');
+  // ---- Ticket prices: rendered from admin-configured site_config.ticket_types ----
+  const DEFAULT_TICKET_TYPES = [
+    { type:'solo',  label:'Solo',  desc:'1 person · 5 PM–10 PM access',  price:499,  per:1 },
+    { type:'duo',   label:'Duo',   desc:'2 people · 5 PM–10 PM access',  price:799,  per:2 },
+    { type:'group', label:'Group', desc:'4 people · 5 PM–10 PM access',  price:1499, per:4 },
+  ];
+  let passEls = [];
+  let lastRenderedTicketsKey = null;
+
+  function renderPasses(list){
+    const wrap = document.getElementById('passList');
+    if(!wrap) return;
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const items = (Array.isArray(list) && list.length) ? list : DEFAULT_TICKET_TYPES;
+    const key = JSON.stringify(items);
+    if(key === lastRenderedTicketsKey) return; // unchanged — keep current selection (e.g. on resize)
+    lastRenderedTicketsKey = key;
+    wrap.innerHTML = items.filter(t => t && t.label && Number(t.price) > 0).map(t => {
+      const type = esc(t.type || t.label);
+      const price = Number(t.price);
+      return `
+        <div class="pass" data-type="${type}" data-price="${price}" data-per="${Number(t.per) || 1}">
+          <div class="pass-main">
+            <div class="name">${esc(t.label)}</div>
+            <div class="desc">${esc(t.desc || '')}</div>
+            <div class="qty">
+              <button type="button" class="minus">−</button>
+              <span class="n">1</span>
+              <button type="button" class="plus">+</button>
+            </div>
+          </div>
+          <div class="pass-price"><div class="amt">₹${price.toLocaleString('en-IN')}</div><div class="per">per pass</div></div>
+        </div>`;
+    }).join('');
+    // selection is reset whenever the pass list is (re)rendered
+    selected = null;
+    qty = 0;
+    bindPassEvents();
+    if(typeof refreshTotals === 'function') refreshTotals();
+  }
+
+  function bindPassEvents(){
+    passEls = document.querySelectorAll('.pass');
+    passEls.forEach(el => {
+      el.addEventListener('click', (e) => {
+        if(e.target.classList.contains('minus') || e.target.classList.contains('plus')) return;
+        const n = el.querySelector('.n');
+        const v = Math.max(1, Number(n.textContent));
+        n.textContent = v;
+        selectPass(el, v);
+      });
+      el.querySelector('.minus').addEventListener('click', () => {
+        const n = el.querySelector('.n');
+        let v = Math.max(0, Number(n.textContent) - 1);
+        n.textContent = v;
+        if(v === 0){
+          deselectPass(el);
+        } else {
+          selectPass(el, v);
+        }
+      });
+      el.querySelector('.plus').addEventListener('click', () => {
+        const n = el.querySelector('.n');
+        let v = Math.min(20, Number(n.textContent) + 1);
+        n.textContent = v;
+        selectPass(el, v);
+      });
+    });
+  }
+
   const passLabel = document.getElementById('passLabel');
   const totalAmt = document.getElementById('totalAmt');
   const continueBtn = document.getElementById('continueBtn');
@@ -966,31 +1004,7 @@
     }
   }
 
-  passEls.forEach(el => {
-    el.addEventListener('click', (e) => {
-      if(e.target.classList.contains('minus') || e.target.classList.contains('plus')) return;
-      const n = el.querySelector('.n');
-      const v = Math.max(1, Number(n.textContent));
-      n.textContent = v;
-      selectPass(el, v);
-    });
-    el.querySelector('.minus').addEventListener('click', () => {
-      const n = el.querySelector('.n');
-      let v = Math.max(0, Number(n.textContent) - 1);
-      n.textContent = v;
-      if(v === 0){
-        deselectPass(el);
-      } else {
-        selectPass(el, v);
-      }
-    });
-    el.querySelector('.plus').addEventListener('click', () => {
-      const n = el.querySelector('.n');
-      let v = Math.min(20, Number(n.textContent) + 1);
-      n.textContent = v;
-      selectPass(el, v);
-    });
-  });
+  renderPasses(DEFAULT_TICKET_TYPES); // paint immediately, refreshed once the config loads
 
   // Open details sheet
   continueBtn.addEventListener('click', () => {
