@@ -730,7 +730,7 @@
   // Set this to false ONLY after RAZORPAY_KEY_ID above is filled in with your real
   // key AND the create-order / verify-payment Edge Functions are deployed with
   // RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET set as Supabase secrets.
-  const BYPASS_PAYMENT = true;
+  const BYPASS_PAYMENT = false;
   // Edge Function endpoints (deployed from supabase-functions/ folder)
   const CREATE_ORDER_FN = `${SUPABASE_URL}/functions/v1/create-order`;
   const VERIFY_PAYMENT_FN = `${SUPABASE_URL}/functions/v1/verify-payment`;
