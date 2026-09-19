@@ -309,6 +309,28 @@
     cursor:pointer; text-decoration:underline; font-family:'Plus Jakarta Sans',sans-serif;
   }
 
+  /* Ticket prices editor */
+  .ticket-row{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap:8px; align-items:start;
+    background:var(--night); border:1px solid var(--line);
+    border-radius:var(--r-sm); padding:10px; margin-bottom:8px;
+  }
+  .ticket-row input[type="text"], .ticket-row input[type="number"]{
+    width:100%; padding:7px 8px; border:1px solid var(--line); border-radius:6px;
+    font-family:'Plus Jakarta Sans',sans-serif; font-size:0.82rem; background:#fff; color:var(--cream);
+  }
+  .ticket-row .ticket-texts{ display:flex; flex-direction:column; gap:6px; }
+  .ticket-row .ticket-nums{ display:flex; gap:10px; margin-top:2px; }
+  .ticket-row .ticket-nums label{
+    flex:1; font-size:0.7rem; color:var(--muted); display:flex; flex-direction:column; gap:3px;
+  }
+  @media(max-width:640px){
+    .ticket-row{ grid-template-columns: 1fr; }
+    .ticket-row .feat-tools{ flex-direction:row; justify-content:flex-end; }
+  }
+
   /* Features editor */
   .feat-row{
     display:grid;
@@ -508,6 +530,17 @@
         <img class="settings-preview" id="previewMobile" style="display:none;">
         <input type="file" id="fileMobile" accept="image/*">
         <div class="settings-status" id="statusMobile"></div>
+      </div>
+      <div class="settings-group">
+        <label>Ticket Prices</label>
+        <p class="settings-hint">These are the passes shown in the "Choose your pass" section on the website. Add, remove, reorder, or edit the name, description, price and people-per-pass for each.</p>
+        <div id="ticketList"></div>
+        <div class="feat-actions">
+          <button type="button" id="ticketAddBtn">+ Add ticket type</button>
+          <button type="button" id="ticketSaveBtn" class="primary">Save ticket prices</button>
+          <button type="button" id="ticketResetBtn">Reset to default</button>
+        </div>
+        <div class="settings-status" id="statusTickets"></div>
       </div>
       <div class="settings-group">
         <label>Highlights / Features</label>
@@ -1058,6 +1091,110 @@
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>';
   }
 
+  // ---- Ticket prices editor ----
+  const DEFAULT_TICKET_TYPES = [
+    { label:'Solo',  desc:'1 person · 5 PM–10 PM access',  price:499,  per:1 },
+    { label:'Duo',   desc:'2 people · 5 PM–10 PM access',  price:799,  per:2 },
+    { label:'Group', desc:'4 people · 5 PM–10 PM access',  price:1499, per:4 },
+  ];
+
+  function slugifyTicketType(s){
+    return (s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'pass';
+  }
+
+  let ticketDraft = [];
+
+  function renderTicketEditor(){
+    const wrap = document.getElementById('ticketList');
+    wrap.innerHTML = '';
+    ticketDraft.forEach((t, i) => {
+      const row = document.createElement('div');
+      row.className = 'ticket-row';
+      row.innerHTML = `
+        <div class="ticket-texts">
+          <input type="text" data-k="label" placeholder="Pass name, e.g. Solo" value="${(t.label||'').replace(/"/g,'&quot;')}">
+          <input type="text" data-k="desc" placeholder="Description, e.g. 1 person · 5 PM–10 PM access" value="${(t.desc||'').replace(/"/g,'&quot;')}">
+          <div class="ticket-nums">
+            <label>Price (₹)<input type="number" min="1" step="1" data-k="price" value="${t.price ?? ''}"></label>
+            <label>People / pass<input type="number" min="1" step="1" data-k="per" value="${t.per ?? ''}"></label>
+          </div>
+        </div>
+        <div class="feat-tools">
+          <button type="button" data-act="up" title="Upar">↑</button>
+          <button type="button" data-act="down" title="Neeche">↓</button>
+          <button type="button" data-act="del" class="del" title="Delete">✕</button>
+        </div>`;
+
+      row.querySelectorAll('[data-k]').forEach(el => {
+        el.addEventListener('input', () => {
+          const k = el.dataset.k;
+          ticketDraft[i][k] = (k === 'price' || k === 'per') ? el.value : el.value;
+          markTicketsDirty();
+        });
+      });
+
+      row.querySelectorAll('[data-act]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const act = btn.dataset.act;
+          if(act === 'del') ticketDraft.splice(i, 1);
+          if(act === 'up' && i > 0) ticketDraft.splice(i-1, 0, ticketDraft.splice(i,1)[0]);
+          if(act === 'down' && i < ticketDraft.length-1) ticketDraft.splice(i+1, 0, ticketDraft.splice(i,1)[0]);
+          renderTicketEditor();
+          markTicketsDirty();
+        });
+      });
+
+      wrap.appendChild(row);
+    });
+  }
+
+  function markTicketsDirty(){
+    const el = document.getElementById('statusTickets');
+    el.className = 'settings-status';
+    el.textContent = 'Unsaved changes — "Save ticket prices" dabayein.';
+  }
+
+  async function saveTickets(){
+    const el = document.getElementById('statusTickets');
+    const clean = ticketDraft
+      .filter(t => (t.label || '').trim() && Number(t.price) > 0 && Number(t.per) > 0)
+      .map(t => ({
+        type: slugifyTicketType(t.label),
+        label: (t.label || '').trim(),
+        desc: (t.desc || '').trim(),
+        price: Number(t.price),
+        per: Number(t.per),
+      }));
+    if(!clean.length){
+      el.className = 'settings-status err';
+      el.textContent = 'At least one ticket type needs a name, price aur people/pass value.';
+      return;
+    }
+    el.className = 'settings-status';
+    el.textContent = 'Saving…';
+    const { error } = await sb.from('site_config')
+      .upsert({ id: 1, ticket_types: clean, updated_at: new Date().toISOString() });
+    if(error){
+      el.className = 'settings-status err';
+      el.textContent = 'Save fail: ' + error.message;
+      return;
+    }
+    el.className = 'settings-status ok';
+    el.textContent = 'Saved ✓ — website refresh karke dekh lein.';
+  }
+
+  document.getElementById('ticketAddBtn').addEventListener('click', () => {
+    ticketDraft.push({ label:'', desc:'', price:'', per:'' });
+    renderTicketEditor();
+    markTicketsDirty();
+  });
+  document.getElementById('ticketSaveBtn').addEventListener('click', saveTickets);
+  document.getElementById('ticketResetBtn').addEventListener('click', () => {
+    ticketDraft = DEFAULT_TICKET_TYPES.map(t => ({ ...t }));
+    renderTicketEditor();
+    markTicketsDirty();
+  });
+
   // ---- Features editor ----
   const ICON_LABELS = {
     headphones:'🎧 Headphones (DJ)', food:'🍴 Food', speaker:'🔊 Speaker', shield:'🛡️ Shield',
@@ -1365,9 +1502,18 @@
     const { data, error } = await sb.from('site_config').select('*').eq('id', 1).maybeSingle();
     if(error || !data){
       if(!featureDraft.length){ featureDraft = DEFAULT_FEATURES.map(f => ({ ...f })); renderFeatureEditor(); }
+      if(!ticketDraft.length){ ticketDraft = DEFAULT_TICKET_TYPES.map(t => ({ ...t })); renderTicketEditor(); }
       renderGallery();
       return;
     }
+
+    let tix = data.ticket_types;
+    if(typeof tix === 'string'){ try { tix = JSON.parse(tix); } catch(e){ tix = null; } }
+    ticketDraft = (Array.isArray(tix) && tix.length)
+      ? tix.map(t => ({ label:t.label||'', desc:t.desc||'', price:t.price ?? '', per:t.per ?? '' }))
+      : DEFAULT_TICKET_TYPES.map(t => ({ ...t }));
+    renderTicketEditor();
+    document.getElementById('statusTickets').textContent = '';
 
     let gallery = data.gallery_images;
     if(typeof gallery === 'string'){ try { gallery = JSON.parse(gallery); } catch(e){ gallery = null; } }
