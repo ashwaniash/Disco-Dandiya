@@ -185,8 +185,15 @@
   .stat span{ font-size:0.68rem; color:var(--muted); font-weight:600; }
 
   /* Bookings */
-  .section-heading{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .section-heading{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; }
   .section-heading .display{ font-size:1.05rem; }
+  .select-toggle-btn{
+    display:flex; align-items:center; gap:6px;
+    background:var(--night-2); border:1px solid var(--line); color:var(--cream);
+    border-radius:var(--r-sm); padding:7px 12px; font-family:'Plus Jakarta Sans',sans-serif; font-size:0.78rem;
+    font-weight:600; cursor:pointer;
+  }
+  .select-toggle-btn.active{ background:var(--rani-soft); border-color:var(--rani); color:var(--rani); }
   .filters{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
   .filters input, .filters select{
     padding:9px 11px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--night-2); color:var(--cream); font-size:0.82rem;
@@ -196,6 +203,22 @@
   .search-wrap svg{ position:absolute; left:11px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--muted-2); pointer-events:none; }
   .search-wrap input{ width:100%; padding-left:34px; }
 
+  /* Bulk selection action bar */
+  .bulk-bar{
+    display:none; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    background:var(--rani-soft); border:1px solid var(--rani); border-radius:var(--r-md);
+    padding:10px 14px; margin-bottom:14px;
+  }
+  .bulk-bar.show{ display:flex; }
+  .bulk-bar .bulk-count{ font-size:0.84rem; font-weight:700; color:var(--rani); }
+  .bulk-bar .bulk-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .bulk-bar button{
+    font-family:'Plus Jakarta Sans',sans-serif; font-size:0.78rem; font-weight:600; cursor:pointer;
+    border-radius:var(--r-sm); padding:7px 12px; border:1px solid var(--line); background:var(--night-2); color:var(--cream);
+  }
+  .bulk-bar button.danger{ background:var(--rani); border-color:var(--rani); color:#fff; }
+  .bulk-bar button.danger:disabled{ opacity:0.5; cursor:not-allowed; }
+
   /* Booking rows — card list (bigger, easier to scan than the old dense table) */
   .booking-list{ display:flex; flex-direction:column; gap:10px; }
   .booking-row{
@@ -203,6 +226,11 @@
     background:var(--night-2); border:1px solid var(--line); border-radius:var(--r-md);
     box-shadow:var(--shadow-sm); padding:14px 16px;
   }
+  .booking-row.selected{ border-color:var(--rani); box-shadow:0 0 0 1.5px var(--rani); }
+  .booking-row .b-check{
+    display:none; width:20px; height:20px; flex-shrink:0; accent-color:var(--rani); cursor:pointer;
+  }
+  .booking-list.select-mode .booking-row .b-check{ display:block; }
   .booking-row .avatar{ width:44px; height:44px; font-size:0.85rem; }
   .avatar{
     border-radius:50%; flex-shrink:0;
@@ -256,6 +284,12 @@
   .modal-row:last-child{ border-bottom:none; }
   .modal-row .m-label{ color:var(--muted); font-weight:600; }
   .modal-row .m-value{ color:var(--cream); font-weight:700; text-align:right; }
+  .modal-actions{ margin-top:16px; }
+  .modal-actions button{
+    width:100%; background:var(--rani); color:#fff; border:none; border-radius:var(--r-sm);
+    padding:12px; font-weight:700; font-size:0.88rem; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif;
+  }
+  .modal-actions button:disabled{ opacity:0.6; cursor:not-allowed; }
 
 
   /* Settings */
@@ -492,6 +526,18 @@
       </div>
       <div class="section-heading">
         <div class="display">Bookings</div>
+        <button type="button" class="select-toggle-btn" id="selectModeBtn">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="selectModeBtnLabel">Select</span>
+        </button>
+      </div>
+      <div class="bulk-bar" id="bulkBar">
+        <div class="bulk-count" id="bulkCount">0 selected</div>
+        <div class="bulk-actions">
+          <button type="button" id="bulkSelectAllBtn">Select all</button>
+          <button type="button" id="bulkClearBtn">Clear</button>
+          <button type="button" class="danger" id="bulkDeleteBtn" disabled>Delete selected</button>
+        </div>
       </div>
       <div class="filters">
         <div class="search-wrap">
@@ -591,6 +637,9 @@
         <button class="modal-close" id="modalCloseBtn" type="button" aria-label="Close">✕</button>
       </div>
       <div id="modalBody"></div>
+      <div class="modal-actions">
+        <button type="button" id="modalDeleteBtn">Delete this booking</button>
+      </div>
     </div>
   </div>
 
@@ -600,6 +649,7 @@
   const SUPABASE_ANON_KEY = "sb_publishable_Y6OYlJ4aOUNP0W3aN09KkQ_bcMkthpY";
   const LIST_FN = `${SUPABASE_URL}/functions/v1/admin-list`;
   const CHECKIN_FN = `${SUPABASE_URL}/functions/v1/admin-checkin`;
+  const DELETE_FN = `${SUPABASE_URL}/functions/v1/admin-delete`;
   // Admin login now uses real Supabase Auth (email + password). The Edge
   // Functions verify the logged-in user's JWT and check they're an approved
   // admin — see admin-list/admin-checkin function code for the ADMIN_EMAILS
@@ -609,6 +659,10 @@
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   let currentSession = null;
   let allBookings = [];
+  let selectMode = false;
+  let selectedIds = new Set();
+  let currentModalBooking = null;
+  let deleteInFlight = false;
 
   function fmtMoney(n){ return '₹' + Number(n).toLocaleString('en-IN'); }
   function fmtDay(d){ if(!d) return '—'; const m = {'16':'16 Oct','17':'17 Oct','18':'18 Oct'}; return m[d.slice(-2)] || d; }
@@ -986,8 +1040,11 @@
 
     body.innerHTML = filtered.map((b, i) => {
       const initials = (b.name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+      const idStr = String(b.id);
+      const checked = selectedIds.has(idStr);
       return `
-      <div class="booking-row" data-i="${i}">
+      <div class="booking-row${checked ? ' selected' : ''}" data-i="${i}">
+        <input type="checkbox" class="b-check" data-id="${idStr}" ${checked ? 'checked' : ''}>
         <span class="avatar">${initials}</span>
         <div class="b-main">
           <div class="b-name">${b.name}</div>
@@ -1004,6 +1061,8 @@
     `;
     }).join('');
     lastFiltered = filtered;
+    body.classList.toggle('select-mode', selectMode);
+    updateBulkBar();
 
     const paid = allBookings.filter(b => b.status === 'paid');
     document.getElementById('stTotal').textContent = allBookings.length;
@@ -1017,6 +1076,7 @@
   const bookingModalOverlay = document.getElementById('bookingModalOverlay');
 
   function openBookingModal(b){
+    currentModalBooking = b;
     document.getElementById('modalName').textContent = b.name || 'Booking';
     const rows = [
       ['Phone', b.phone],
@@ -1035,19 +1095,141 @@
 
   function closeBookingModal(){
     bookingModalOverlay.classList.remove('show');
+    currentModalBooking = null;
   }
 
   document.getElementById('bookingsList').addEventListener('click', (e) => {
     const row = e.target.closest('.booking-row');
     if(!row) return;
     const b = lastFiltered[Number(row.dataset.i)];
-    if(b) openBookingModal(b);
+    if(!b) return;
+
+    // if the click landed on the checkbox itself, let the 'change' listener below
+    // handle it exclusively — otherwise the checkbox's own toggle + this handler's
+    // toggle would fire on the same click and cancel each other out
+    if(e.target.classList.contains('b-check')) return;
+
+    if(selectMode){
+      toggleSelected(String(b.id));
+      return;
+    }
+    openBookingModal(b);
+  });
+
+  // checkbox 'change' — fires on click, and on keyboard/space activation too
+  document.getElementById('bookingsList').addEventListener('change', (e) => {
+    if(!e.target.classList.contains('b-check')) return;
+    toggleSelected(e.target.dataset.id, e.target.checked);
   });
 
   document.getElementById('modalCloseBtn').addEventListener('click', closeBookingModal);
   bookingModalOverlay.addEventListener('click', (e) => {
     if(e.target === bookingModalOverlay) closeBookingModal();
   });
+
+  // ---- Select mode / bulk delete ----
+  const selectModeBtn = document.getElementById('selectModeBtn');
+  const selectModeBtnLabel = document.getElementById('selectModeBtnLabel');
+  const bulkBar = document.getElementById('bulkBar');
+  const bulkCount = document.getElementById('bulkCount');
+  const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+
+  function toggleSelected(id, force){
+    if(id === undefined || id === null) return;
+    const has = selectedIds.has(id);
+    const want = force === undefined ? !has : force;
+    if(want) selectedIds.add(id); else selectedIds.delete(id);
+    renderBookings();
+  }
+
+  function updateBulkBar(){
+    bulkBar.classList.toggle('show', selectMode);
+    bulkCount.textContent = `${selectedIds.size} selected`;
+    bulkDeleteBtn.disabled = selectedIds.size === 0 || deleteInFlight;
+  }
+
+  selectModeBtn.addEventListener('click', () => {
+    selectMode = !selectMode;
+    selectModeBtn.classList.toggle('active', selectMode);
+    selectModeBtnLabel.textContent = selectMode ? 'Cancel' : 'Select';
+    if(!selectMode) selectedIds.clear();
+    renderBookings();
+  });
+
+  document.getElementById('bulkSelectAllBtn').addEventListener('click', () => {
+    // "Select all" selects every booking currently visible under the active
+    // search/day/status filters — so "delete all" is just "select all" + delete,
+    // and a stray tap can never wipe bookings outside what's on screen.
+    lastFiltered.forEach(b => selectedIds.add(String(b.id)));
+    renderBookings();
+  });
+
+  document.getElementById('bulkClearBtn').addEventListener('click', () => {
+    selectedIds.clear();
+    renderBookings();
+  });
+
+  bulkDeleteBtn.addEventListener('click', async () => {
+    if(!selectedIds.size || deleteInFlight) return;
+    const ids = Array.from(selectedIds);
+    const ok = confirm(`Delete ${ids.length} booking${ids.length > 1 ? 's' : ''}? Ye undo nahi ho sakta.`);
+    if(!ok) return;
+    await deleteBookings(ids, () => {
+      selectedIds.clear();
+      selectMode = false;
+      selectModeBtn.classList.remove('active');
+      selectModeBtnLabel.textContent = 'Select';
+    });
+  });
+
+  document.getElementById('modalDeleteBtn').addEventListener('click', async () => {
+    if(!currentModalBooking || deleteInFlight) return;
+    const b = currentModalBooking;
+    const ok = confirm(`Delete booking for "${b.name}"? Ye undo nahi ho sakta.`);
+    if(!ok) return;
+    await deleteBookings([b.id], () => {
+      closeBookingModal();
+    });
+  });
+
+  async function deleteBookings(ids, onSuccess){
+    if(!ids || !ids.length) return;
+    deleteInFlight = true;
+    bulkDeleteBtn.disabled = true;
+    bulkDeleteBtn.textContent = 'Deleting…';
+    const modalBtn = document.getElementById('modalDeleteBtn');
+    modalBtn.disabled = true;
+    const prevModalLabel = modalBtn.textContent;
+    modalBtn.textContent = 'Deleting…';
+    try {
+      const res = await fetch(DELETE_FN, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ booking_ids: ids })
+      });
+      if(res.status === 401){ showGate('Session expired — please log in again.'); return; }
+      let data = {};
+      try { data = await res.json(); } catch(e){ /* some errors have no body */ }
+      if(!res.ok || data.error){
+        alert('Delete failed: ' + (data.error || res.statusText || 'Unknown error'));
+        return;
+      }
+      // remove locally so the UI updates instantly without a full reload
+      // (ids normalized to strings — booking primary keys may be numeric or uuid)
+      const deletedSet = new Set(ids.map(String));
+      allBookings = allBookings.filter(b => !deletedSet.has(String(b.id)));
+      if(typeof onSuccess === 'function') onSuccess();
+      renderBookings();
+    } catch(e){
+      alert('Network error while deleting: ' + e.message);
+    } finally {
+      deleteInFlight = false;
+      modalBtn.disabled = false;
+      modalBtn.textContent = prevModalLabel;
+      bulkDeleteBtn.textContent = 'Delete selected';
+      updateBulkBar();
+    }
+  }
 
   document.getElementById('searchBox').addEventListener('input', renderBookings);
   document.getElementById('dayFilter').addEventListener('change', renderBookings);
