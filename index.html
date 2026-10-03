@@ -664,6 +664,7 @@
         </div>
       </div>
 
+      <div id="autoDlStatus" class="email-status" style="display:none;"></div>
       <div id="emailStatus" class="email-status" style="display:none;"></div>
 
       <div class="screenshot-note">
@@ -1164,6 +1165,9 @@
     lastBooking = { id: booking.id, shortId: booking.shortId, name, pass: `${qty} × ${selected.label}`, date: selectedDay, amount };
     successOverlay.classList.add('show');
 
+    // Payment is complete -> automatically download the ticket as a PDF
+    autoDownloadTicketPdf(lastBooking);
+
     const emailStatusEl = document.getElementById('emailStatus');
     if(email){
       if(emailStatusEl) emailStatusEl.style.display = 'block';
@@ -1174,7 +1178,7 @@
   }
 
   // ---- Ticket image builder (app-ticket style card: logo, QR, booking details) ----
-  // Shared by the Download Ticket button and the automatic "email my ticket" flow.
+  // Shared by the PDF download, the Download Ticket button and the automatic "email my ticket" flow.
   function loadImagePromise(src, crossOrigin){
     return new Promise((resolve) => {
       if(!src){ resolve(null); return; }
@@ -1200,8 +1204,8 @@
     ctx.closePath();
   }
 
-  // Builds the branded ticket PNG for a given booking. Returns a Promise<Blob|null>.
-  function buildTicketBlob(booking){
+  // Draws the branded ticket for a given booking. Returns a Promise<HTMLCanvasElement|null>.
+  function buildTicketCanvas(booking){
     return new Promise((resolve) => {
       if(!booking || typeof QRCode === 'undefined'){ resolve(null); return; }
 
@@ -1387,29 +1391,107 @@
         ctx.textAlign = 'center';
         ctx.fillText('Show this QR code at entry', W / 2, stripY + 34);
 
-        try {
-          canvas.toBlob((blob) => resolve(blob || null));
-        } catch(e){
-          console.error(e);
-          resolve(null);
-        }
+        resolve(canvas);
       });
     });
+  }
+
+  // PNG version of the ticket (still used for the email attachment)
+  async function buildTicketBlob(booking){
+    const canvas = await buildTicketCanvas(booking);
+    if(!canvas) return null;
+    return new Promise((resolve) => {
+      try {
+        canvas.toBlob((blob) => resolve(blob || null));
+      } catch(e){
+        console.error(e);
+        resolve(null);
+      }
+    });
+  }
+
+  // ---- PDF version of the ticket ----
+  // Builds a minimal single-page PDF in the browser (ticket image embedded as JPEG),
+  // so no extra library / CDN is needed.
+  function canvasToPdfBlob(canvas){
+    const w = canvas.width, h = canvas.height;
+    const pw = Math.round(w * 0.75), ph = Math.round(h * 0.75); // px -> pt
+    const jpegBase64 = canvas.toDataURL('image/jpeg', 0.95).split(',')[1];
+    const bin = atob(jpegBase64);
+    const jpg = new Uint8Array(bin.length);
+    for(let i = 0; i < bin.length; i++) jpg[i] = bin.charCodeAt(i);
+
+    const enc = new TextEncoder();
+    const chunks = [];
+    let len = 0;
+    const offsets = [];
+    const push = (d) => {
+      const u = (typeof d === 'string') ? enc.encode(d) : d;
+      chunks.push(u);
+      len += u.length;
+    };
+
+    push('%PDF-1.4\n');
+    offsets[1] = len; push('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+    offsets[2] = len; push('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
+    offsets[3] = len; push(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pw} ${ph}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>\nendobj\n`);
+    offsets[4] = len;
+    push(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`);
+    push(jpg);
+    push('\nendstream\nendobj\n');
+    const content = `q ${pw} 0 0 ${ph} 0 0 cm /Im0 Do Q`;
+    offsets[5] = len; push(`5 0 obj\n<< /Length ${content.length} >>\nstream\n${content}\nendstream\nendobj\n`);
+    const xref = len;
+    push('xref\n0 6\n0000000000 65535 f \n');
+    for(let i = 1; i <= 5; i++) push(String(offsets[i]).padStart(10, '0') + ' 00000 n \n');
+    push(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+
+    return new Blob(chunks, { type: 'application/pdf' });
+  }
+
+  async function buildTicketPdfBlob(booking){
+    const canvas = await buildTicketCanvas(booking);
+    if(!canvas) return null;
+    try {
+      return canvasToPdfBlob(canvas);
+    } catch(e){
+      console.error(e);
+      return null;
+    }
+  }
+
+  function saveBlobAsFile(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 4000);
+  }
+
+  // Runs automatically as soon as payment is confirmed
+  async function autoDownloadTicketPdf(booking){
+    const st = document.getElementById('autoDlStatus');
+    if(st){ st.style.display = 'block'; st.className = 'email-status'; st.textContent = 'Downloading your ticket PDF…'; }
+    try {
+      const blob = await buildTicketPdfBlob(booking);
+      if(!blob) throw new Error('pdf failed');
+      saveBlobAsFile(blob, `disco-dandiya-ticket-${booking.shortId}.pdf`);
+      if(st){ st.className = 'email-status ok'; st.textContent = 'Ticket PDF downloaded ✓ (check your Downloads folder)'; }
+    } catch(e){
+      console.error(e);
+      if(st){ st.className = 'email-status err'; st.textContent = 'Auto-download did not work — please tap "Download Ticket" below.'; }
+    }
   }
 
   document.getElementById('downloadBtn').addEventListener('click', async () => {
     if(!lastBooking) return;
     if (typeof QRCode === 'undefined') { showStatus('QR library failed to load — please reload the page.', false); return; }
-    const blob = await buildTicketBlob(lastBooking);
+    const blob = await buildTicketPdfBlob(lastBooking);
     if(!blob){ showStatus('Something went wrong while creating the ticket.', false); return; }
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `disco-dandiya-ticket-${lastBooking.shortId}.png`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    saveBlobAsFile(blob, `disco-dandiya-ticket-${lastBooking.shortId}.pdf`);
   });
 
   // ---- Auto-email the ticket (calls a Supabase Edge Function — see send-ticket-email/index.ts) ----
