@@ -131,6 +131,18 @@
     transition: transform .12s ease, box-shadow .12s ease;
   }
   .book-btn:active{ transform: scale(0.97); box-shadow:none; }
+  .mt-open-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    background: var(--night-2); color: var(--rani);
+    border: 1px solid var(--rani);
+    box-shadow: var(--shadow-sm);
+    padding: 9px 18px; border-radius: 999px;
+    font-family:'Inter', sans-serif; font-size:0.8rem; font-weight:700;
+    cursor:pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .mt-open-btn:active{ transform: scale(0.97); box-shadow:none; }
+  .mt-open-btn svg{ width:13px; height:13px; }
   .book-btn svg{ width:13px; height:13px; }
 
   /* ---------- Section label ---------- */
@@ -504,6 +516,32 @@
   .video-mute-btn svg{ width:18px; height:18px; }
   .video-mute-btn svg.hidden{ display:none; }
 
+  /* ---------- My Tickets (saved on this device) ---------- */
+  .mt-list{ display:flex; flex-direction:column; gap:12px; }
+  .mt-card{
+    background: var(--night-2); border:1px solid var(--card-line); border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm); padding:14px 15px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .mt-info{ flex:1; min-width:0; }
+  .mt-pass{ font-family:'Playfair Display', serif; font-weight:600; font-size:1.02rem; }
+  .mt-meta{ font-size:0.78rem; color: var(--muted); margin-top:3px; line-height:1.4; }
+  .mt-id{ color: var(--gold); font-weight:700; }
+  .mt-dl{
+    flex-shrink:0; background: var(--gold); color: var(--night-2); border:none;
+    padding:10px 14px; border-radius:999px; font-family:'Inter', sans-serif;
+    font-weight:600; font-size:0.78rem; cursor:pointer;
+    box-shadow: 0 4px 12px rgba(184,134,46,0.28);
+    transition: transform .12s ease;
+  }
+  .mt-dl:active{ transform: scale(0.96); }
+  .mt-dl:disabled{ opacity:0.55; cursor:not-allowed; }
+  .mt-empty{
+    background: var(--night-2); border:1px dashed var(--line); border-radius: var(--r-md);
+    padding:18px 16px; text-align:center; font-size:0.84rem; color: var(--muted); line-height:1.45;
+  }
+  .mt-note{ font-size:0.72rem; color: var(--muted-2); margin-top:10px; line-height:1.4; }
+
   footer{ text-align:center; font-size:0.74rem; color: var(--muted-2); padding: 32px 20px; }
   .footer-logo-box{
     width:100%; max-width:90px; height:36px;
@@ -542,6 +580,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z"/></svg>
         Book Now
       </a>
+      <button type="button" class="mt-open-btn" id="myTicketsBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z"/><path d="M14 6v12" stroke-dasharray="2 3"/></svg>
+        My Tickets
+      </button>
     </div>
   </div>
 
@@ -596,6 +638,17 @@
       <b id="totalAmt">₹0</b>
     </div>
     <button id="continueBtn" disabled>Continue</button>
+  </div>
+
+  <!-- My Tickets sheet -->
+  <div class="overlay" id="myTicketsOverlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <button class="sheet-close" id="closeMyTickets">✕</button>
+      <div class="section-title">My Tickets</div>
+      <p class="section-hint">Your booked tickets are saved on this phone — download them anytime.</p>
+      <div class="mt-list" id="myTicketsList"></div>
+    </div>
   </div>
 
   <!-- Details + Pay sheet -->
@@ -1163,6 +1216,7 @@
       });
     }
     lastBooking = { id: booking.id, shortId: booking.shortId, name, pass: `${qty} × ${selected.label}`, date: selectedDay, amount };
+    saveMyTicket(lastBooking); // keep a copy in "My Tickets" on this device
     successOverlay.classList.add('show');
 
     // Payment is complete -> automatically download the ticket as a PDF
@@ -1176,6 +1230,87 @@
       emailStatusEl.style.display = 'none';
     }
   }
+
+  // ---- My Tickets: tickets are saved in this browser (localStorage) ----
+  const MY_TICKETS_KEY = 'dd_my_tickets_v1';
+
+  function loadMyTickets(){
+    try {
+      const raw = localStorage.getItem(MY_TICKETS_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch(e){ return []; }
+  }
+
+  function saveMyTicket(booking){
+    try {
+      const list = loadMyTickets().filter(t => t.id !== booking.id);
+      list.unshift({
+        id: booking.id,
+        shortId: booking.shortId,
+        name: booking.name,
+        pass: booking.pass,
+        date: booking.date,
+        amount: booking.amount,
+        savedAt: Date.now()
+      });
+      localStorage.setItem(MY_TICKETS_KEY, JSON.stringify(list.slice(0, 50)));
+    } catch(e){ console.warn('Could not save ticket locally', e); }
+    renderMyTickets();
+  }
+
+  function fmtTicketDate(d){
+    const m = { '16':'16 Oct 2026', '17':'17 Oct 2026', '18':'18 Oct 2026' };
+    return m[String(d || '').slice(-2)] || d || '';
+  }
+
+  function renderMyTickets(){
+    const listEl = document.getElementById('myTicketsList');
+    if(!listEl) return;
+    const list = loadMyTickets();
+    if(!list.length){
+      listEl.innerHTML = '<div class="mt-empty">You have no tickets yet. Once you book a pass, your ticket will appear here.</div>';
+      return;
+    }
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    listEl.innerHTML = list.map(t => `
+      <div class="mt-card">
+        <div class="mt-info">
+          <div class="mt-pass">${esc(t.pass)}</div>
+          <div class="mt-meta">${esc(t.name)} · ${esc(fmtTicketDate(t.date))}<br>Ticket ID: <span class="mt-id">${esc(t.shortId)}</span> · ₹${Number(t.amount).toLocaleString('en-IN')}</div>
+        </div>
+        <button type="button" class="mt-dl" data-tid="${esc(t.id)}">Download PDF</button>
+      </div>`).join('');
+  }
+
+  document.getElementById('myTicketsList').addEventListener('click', async (e) => {
+    const btn = e.target.closest('.mt-dl');
+    if(!btn) return;
+    const t = loadMyTickets().find(x => x.id === btn.dataset.tid);
+    if(!t) return;
+    if(typeof QRCode === 'undefined'){ alert('QR library failed to load — please reload the page.'); return; }
+    const label = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Preparing…';
+    try {
+      const blob = await buildTicketPdfBlob(t);
+      if(!blob) throw new Error('pdf failed');
+      saveBlobAsFile(blob, `disco-dandiya-ticket-${t.shortId}.pdf`);
+    } catch(err){
+      console.error(err);
+      alert('Could not create the ticket PDF. Please try again.');
+    }
+    btn.disabled = false; btn.textContent = label;
+  });
+
+  renderMyTickets();
+
+  const myTicketsOverlay = document.getElementById('myTicketsOverlay');
+  document.getElementById('myTicketsBtn').addEventListener('click', () => {
+    renderMyTickets(); // refresh in case tickets changed
+    myTicketsOverlay.classList.add('show');
+  });
+  document.getElementById('closeMyTickets').addEventListener('click', () => myTicketsOverlay.classList.remove('show'));
+  myTicketsOverlay.addEventListener('click', (e) => { if(e.target === myTicketsOverlay) myTicketsOverlay.classList.remove('show'); });
 
   // ---- Ticket image builder (app-ticket style card: logo, QR, booking details) ----
   // Shared by the PDF download, the Download Ticket button and the automatic "email my ticket" flow.
